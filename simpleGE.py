@@ -66,8 +66,6 @@ class Sprite(pygame.sprite.Sprite):
         self.__dx = 0 
         self.__dy = 0
         
-        
-        
         # motion properties
         self.dx = 0
         self.dy = 0
@@ -79,7 +77,16 @@ class Sprite(pygame.sprite.Sprite):
         self.clicked = False
         self.mouseOver = False
         self.mouseDown = False
-
+        
+        # boundary constants
+        self.WRAP = 0
+        self.BOUNCE = 1
+        self.STOP = 2
+        self.HIDE = 3
+        self.CONTINUE = 4
+        
+        self.boundAction = self.WRAP
+        
     @property 
     def x(self):
         return self.__x
@@ -255,6 +262,7 @@ class Sprite(pygame.sprite.Sprite):
         self.process()
         
     def checkBounds(self):
+        """
         scrWidth = self.screen.get_width()
         scrHeight = self.screen.get_height()
         if self.visible:
@@ -266,6 +274,74 @@ class Sprite(pygame.sprite.Sprite):
                 self.y = 0
             if self.y < 0:
                 self.y = scrHeight
+        """
+        
+        """ checks boundary and acts based on 
+            self.BoundAction.
+            WRAP: wrap around screen (default)
+            BOUNCE: bounce off screen
+            STOP: stop at edge of screen
+            HIDE: move off stage and wait
+            CONTINUE: keep going at present course and speed
+            
+            automatically called by update()
+        """
+        
+        # ignore boundaries if we are hidden
+        if self.visible:
+            scrWidth = self.screen.get_width()
+            scrHeight = self.screen.get_height()
+            
+            #create variables to simplify checking
+            offRight = offLeft = offTop = offBottom = offScreen = False
+            
+            if self.x > scrWidth:
+                offRight = True
+            if self.x < 0:
+                offLeft = True
+            if self.y > scrHeight:
+                offBottom = True
+            if self.y < 0:
+                offTop = True
+                
+            if offRight or offLeft or offTop or offBottom:
+                offScreen = True
+            
+            if self.boundAction == self.WRAP:
+                if offRight:
+                    self.x = 0
+                if offLeft:
+                    self.x = scrWidth
+                if offBottom:
+                    self.y = 0
+                if offTop:
+                    self.y = scrHeight
+            
+            elif self.boundAction == self.BOUNCE:
+                if offLeft or offRight:
+                    self.dx *= -1
+                if offTop or offBottom:
+                    self.dy *= -1
+                    
+                #self.updateVector()
+                #self.rotation = self.dir
+            
+            elif self.boundAction == self.STOP:
+                if offScreen:
+                    self.speed = 0
+            
+            elif self.boundAction == self.HIDE:
+                if offScreen:
+                    self.speed = 0
+                    self.setPosition((-1000, -1000))
+            
+            elif self.boundAction == self.CONTINUE:
+                pass
+                
+            else:
+                # assume it's CONTINUE - keep going forever
+                pass    
+            
             
     def setSize(self, newX, newY):
         self.image = pygame.transform.scale(self.image, (newX, newY))
@@ -288,6 +364,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = pygame.Surface(size, pygame.SRCALPHA)
         self.image.fill(color)
         self.rect = self.image.get_rect()
+        self.imageMaster = self.image
         
     def collidesWith(self, target):
         """ boolean function. Returns True if the sprite
@@ -318,7 +395,7 @@ class Sprite(pygame.sprite.Sprite):
         
     def isKeyPressed(self, key):
         #convenience method
-        return self.scene.isKeyPressed(key)
+        return self.scene.isKeyPressed(key)    
         
 
 class BasicSprite(pygame.sprite.Sprite):
@@ -1003,7 +1080,7 @@ class Label(pygame.sprite.Sprite):
             font: font to use
             text: text to display
             fgColor: foreground color
-            bgColor: background color
+            bgColor: background color (None for transparent bg)
             center: position of label's center
             size: (width, height) of label
     """
@@ -1012,17 +1089,24 @@ class Label(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.font = pygame.font.Font(fontName, 20)
         self.text = ""
-        self.fgColor = ((0x00, 0x00, 0x00))
-        self.bgColor = ((0xFF, 0xFF, 0xFF))
+        self.fgColor = ((0xFF, 0xFF, 0xFF))
+        self.bgColor = ((0x00, 0x00, 0x00))
         self.center = (100, 100)
         self.size = (150, 30)
-
+        self.clearBack = False
+        
     def update(self):
         self.checkEvents()
         self.process()
-        self.image = pygame.Surface(self.size)
-        #self.image.fill(self.bgColor)
-        fontSurface = self.font.render(self.text, True, self.fgColor, self.bgColor)
+        self.image = pygame.Surface(self.size, pygame.SRCALPHA)
+        
+        if self.clearBack:
+            fontSurface = self.font.render(self.text, True, self.fgColor)
+            self.image.set_alpha(255)
+        else:
+            fontSurface = self.font.render(self.text, True, self.fgColor, self.bgColor)
+            self.image.fill(self.bgColor)
+
         #center the text
         xPos = (self.image.get_width() - fontSurface.get_width())/2
         
@@ -1056,6 +1140,7 @@ class Button(Label):
         Label.__init__(self)
         self.active = False
         self.clicked = False
+        self.fgColor = (0x00, 0x00, 0x00)
         self.bgColor = (0xCC, 0xCC, 0xCC)
     
     def update(self):
@@ -1240,8 +1325,8 @@ class Thing(Sprite):
     
     def __init__(self, scene):
         super().__init__(scene)
-        self.setImage("car.png")    
-        self.setSize(50, 25)
+        self.colorRect("blue", (50, 20))
+        #self.setSize(50, 50)
         self.setAngle(45)
         
     def process(self):
@@ -1256,6 +1341,11 @@ class Thing(Sprite):
         if self.isKeyPressed(pygame.K_RIGHT):
             self.imageAngle -= 5 
             self.moveAngle -= 5
+            
+        if self.isKeyPressed(pygame.K_w):
+            self.boundAction = self.WRAP
+        elif self.isKeyPressed(pygame.K_b):
+            self.boundAction = self.BOUNCE
             
         self.scene.lblOut.text = f"m: {self.moveAngle}, i: {self.imageAngle}"
         
@@ -1296,6 +1386,9 @@ class LblOut(Label):
         super().__init__()
         self.center = (320, 30)
         self.size = (200, 30)
+        self.fgColor = "blue"
+        self.bgColor = "white"
+        self.clearBack = True
 
 class Game(Scene):
     
