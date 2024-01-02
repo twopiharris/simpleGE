@@ -33,3 +33,32 @@ SimpleGE comes with a few other classes to help write fun games.
 * **Sound** - an object to simplify sound effects
 * **Animation** - an object to easily convert a spritesheet into a character animation.  Can also be used to extract tiles from a tilesheet for use in a tile-based world.
 
+# Documentation
+
+## Scene
+
+### Constructor
+game = simpleGE.Scene(size)  
+size is a tuple.  If left out, size is (640, 480)
+
+### Properties
+* **screen** - the display surface. An ordinary Pygame surface same size as Scene
+* **background** - the background - A pygame surface drawn to screen every frame
+* **sprites** - a spriteList (technically an OrderedUpdates) All sprites must be added to this or another list.
+  The list can contain sprites and / or tuples containing sprites. Sprites are drawn in the order they appear
+  on this list, with later items drawn on top of earlier elements. 
+### Standard Methods
+* **start()** - begins the animation loop for this scene. Control goes to this scene's event handlers
+* **stop()** - ends the animation loop for this scene. Control is reverted to calling function
+* **process()** - happens once on every frame. Handy, but *does not* include the formal event handler
+* **doEvents(event)** - is called once for every event in event handler. Useful for single-call keyboard input
+* **setCaption** - sets the caption of this window
+* **isKeyPressed(key)** - key should be a pygame keyboard constant. Returns True if that key is currently pressed
+
+### Optional Methods
+Sprite groups were used to organize groups of sprites, but since the standard sprite list can
+contain tuples, the sprite group feature is generally not needed.  It is included for backwards compatibility
+
+* **group = makeSpriteGroup(sprites)** - makes a new sprite group
+* **addSpriteGroup(group)** - adds the sprite group to the scene
+
