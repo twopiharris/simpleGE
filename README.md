@@ -3,12 +3,11 @@
 ## Overview
 
 New programmers are very interested in game development, but arcade games can be 
-extremely difficult for new programmers to write.  Scratch is a powerful and popular tool for beginners, but the tile-based programming has limitations, and does not always feel like 'real' programming in a traditional language.  More powerful graphics APIs like Pygame are extremely powerful, but can be very complex for beginners.  Stock pygame requires a fair amount of math and programming skill to use well.  A number of attempts to simplify pygame have been created for educational purposes (specifically pygame zero.)  However, when examining this tool for use in an educational setting, I found it to be too limiting.  Specifically, it did not allow for rotating sprites or sprite sheet animation.  
+extremely difficult for new programmers to write.  Scratch is a powerful and popular tool for beginners, but the tile-based programming has limitations, and does not always feel like 'real' programming in a traditional language.  More powerful graphics APIs like Pygame are extremely powerful, but can be very complex for beginners.  Stock pygame requires a fair amount of math and programming skill to use well.  A number of attempts to simplify pygame have been created for educational purposes (specifically pygame zero.)  However, when examining this tool for use in an educational setting, I found it to be too limiting.  Specifically, it did not allow for rotating sprites or sprite sheet animation.  The larger gameDev tools like Unity, Unreal, and Godot can be very intimidating, and none uses stock Python.
 
-SimpleGE is derived from two previous engines I wrote for various books and teaching experiences.  It is designed to be powerful, flexible, and reasonably easy to use. It has a relatively small number of objects to learn, but you can use it to make a surprising range of 2D games.
-
+SimpleGE is derived from two previous engines I wrote for various books and teaching experiences.  It is designed to be powerful, flexible, and reasonably easy to use. It has a relatively small number of objects to learn, but you can use it to make a surprising range of 2D games. It is a very light package, and runs fine on raspberry pis and chromebooks.
 ## The Scene
-The primary class in simpleGE is the scene.  If you've tried to write pygame code, you end up writing the same (somewhat mystic) main code every time.  The scene class manages all of this, allowing you to create an object that encapsulates the screen and the timing system.  You can use the Scene class as-is, or you can subclass it to create your own custom scenes.  You can have as many scenes as you want in your game, so you can build separate scenes for instructions, game play, multiple levels of your game, and end-of game summaries.  
+The primary class in simpleGE is the scene.  If you've tried to write pygame code, you end up writing the same (somewhat mystic) main code every time.  The scene class manages all of this, allowing you to create an object that encapsulates the screen and the timing system.  You can use the Scene class as-is, or you can subclass it to create your own custom scenes.  You can have as many scenes as you want in your game, so you can build separate scenes for instructions, game play, multiple levels of your game, and end-of game summaries.  The Scene class can be used as-is, or can be subclassed for more flexibility.
 
 ## The Sprite
 The sprite class is the foundational class in simpleGE.  It is based on the pygame Sprite, so you can still do everything you could do with the pygame sprite.  But it is quite a bit easier to use and more powerful. It has a number of convenience features.
@@ -59,7 +58,7 @@ size is a tuple.  If left out, size is (640, 480)
 * **setCaption(caption)** - sets the caption of this window
 * **isKeyPressed(key)** - key should be a pygame keyboard constant. Returns True if that key is currently pressed
 
-### Optional Methods
+### Optional Group Methods
 Sprite groups were used to organize groups of sprites, but since the standard sprite list can
 contain tuples, the sprite group feature is generally not needed.  It is included for backwards compatibility
 
@@ -70,6 +69,21 @@ contain tuples, the sprite group feature is generally not needed.  It is include
 The sprite class is the workhorse of simpleGE.  It can be used as-is or (more commonly) subclassed to create the 
 various elements in your code.  
 
+### Constructor
+mySprite = simpleGE.Sprite(scene)  
+The scene parameter is the name of the scene that the sprite belongs to
+This allows communication between sprites and the scene, and the other sprites
+
+### Inherited Properties
+The simpleGE Sprite class is inherited from the pygame Sprite.  So it has access to the pygame.Sprite's two properties:
+* **image** - This represents the image to display. It is a pygame Surface object. Normally you will use simpleGE's methods
+  manipulate the image, but if you wish to manipulate it directly, you can do so.
+* **rect** - the rect is a pygame.Rect object, which represents the size and position of the sprite. You shouldn't need to
+  work with this directly, as simpleGE does everything you might need from the rect object.
+
+  In general, you should use the simpleGE techniques first, and if there is something you need that simpleGE cannot do,
+  use the image or rect object directly.
+  
 ### Position Properties
 * **x** - the x position of the center of the sprite
 * **y** - the y position of the center of the sprite
@@ -78,6 +92,7 @@ various elements in your code.
 * **top** - the top edge of the sprite
 * **bottom** - the bottom edge of the sprite
 * **position** - an (x, y) tuple containing the coordinates of the center of the sprite
+    
 You can get or set any of these elements, but ultimately they all manipulate the x and y values. Other properties
 are included for convenience
 
@@ -86,9 +101,10 @@ are included for convenience
 * **dy** - delta (change in y every frame. Positive value moves down, negative value moves up
 * **moveAngle** - indicates an angle of motion every frame
 * **speed** - indicates how quickly the sprite moves every frame
-* **imageAngle** - indicates how the angle is rotated
-Note that dx and dy are how motion is calculated. The other properties are used to calculate dx and dy
-for convenience.  Note also that the sprite does not have to be pointed in the motion of travel
+* **imageAngle** - indicates how the image is rotated
+    
+Note that dx and dy control most motion. The other properties are used to calculate dx and dy
+for convenience.  Note also that the sprite does not have to be pointed in the motion of travel.
 
 ### Status Properties
 * **visible** - Boolean. If visible is false, sprite is moved off-screen, no longer responds to collisions or
@@ -116,6 +132,7 @@ These methods are used to configure the appearance of the sprite object
 * **hide()** - make the sprite invisible. Sprite remains in memory, but is moved off-screen and does not respond to
   collisions or boundary checks.
 * **show()** - The sprite is made visible. It may be necessary to specify new position and speed.
+* **drawTrace(color)** - draws a line from the previous position to the current one
 
 ## Motion Methods
 These methods (along with the associated propertied) are used to move the sprite.
@@ -133,6 +150,6 @@ These methods are used to check the status of the Sprite.
   overwrite this method if you want some other boundary action. You never need to explicitly call this method as it is called automatically
   for each sprite.
 * **collidesWith(sprite)** - determines if this sprite is colliding with another sprite. True if collided using AABB method.
-* **DISTANCETO(point)** - determines distance between the center of this sprite and another point (usually position of another sprite or mouse)
-* **DIRTO(point)** - determines angle between the center of this sprite and another point.
+* **distanceTo(point)** - determines distance between the center of this sprite and another point (usually position of another sprite or mouse)
+* **dirTo(point)** - determines angle between the center of this sprite and another point.
 * **isKeyPressed(key)** - key is a pygame keyboard constant.  True if that key is currently pressed.
