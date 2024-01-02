@@ -36,6 +36,8 @@ SimpleGE comes with a few other classes to help write fun games.
 # Documentation
 
 ## Scene
+The scene encapsulates the pygame animation loop.  You may have multiple scenes if you wish. Each scene usually
+incorporates a level of the game, or some other screen such as an introduction or game summary.
 
 ### Constructor
 game = simpleGE.Scene(size)  
@@ -50,9 +52,11 @@ size is a tuple.  If left out, size is (640, 480)
 ### Standard Methods
 * **start()** - begins the animation loop for this scene. Control goes to this scene's event handlers
 * **stop()** - ends the animation loop for this scene. Control is reverted to calling function
-* **process()** - happens once on every frame. Handy, but *does not* include the formal event handler
-* **doEvents(event)** - is called once for every event in event handler. Useful for single-call keyboard input
-* **setCaption** - sets the caption of this window
+* **process()** - happens once on every frame. Handy, but *does not* include the formal event handler.
+  Overwrite for code you want to execute every frame.
+* **doEvents(event)** - is called once for every event in event handler. Overwrite for code that needs access
+  to pygame event objects (especially keyboard input)
+* **setCaption(caption)** - sets the caption of this window
 * **isKeyPressed(key)** - key should be a pygame keyboard constant. Returns True if that key is currently pressed
 
 ### Optional Methods
@@ -62,3 +66,73 @@ contain tuples, the sprite group feature is generally not needed.  It is include
 * **group = makeSpriteGroup(sprites)** - makes a new sprite group
 * **addSpriteGroup(group)** - adds the sprite group to the scene
 
+## Sprite
+The sprite class is the workhorse of simpleGE.  It can be used as-is or (more commonly) subclassed to create the 
+various elements in your code.  
+
+### Position Properties
+* **x** - the x position of the center of the sprite
+* **y** - the y position of the center of the sprite
+* **left** - the left-hand edge of the sprite
+* **right** - the right-hand edge of the sprite
+* **top** - the top edge of the sprite
+* **bottom** - the bottom edge of the sprite
+* **position** - an (x, y) tuple containing the coordinates of the center of the sprite
+You can get or set any of these elements, but ultimately they all manipulate the x and y values. Other properties
+are included for convenience
+
+### Motion Properties 
+* **dx** - delta (change) in x every frame.  Positive value moves right, negative value moves left
+* **dy** - delta (change in y every frame. Positive value moves down, negative value moves up
+* **moveAngle** - indicates an angle of motion every frame
+* **speed** - indicates how quickly the sprite moves every frame
+* **imageAngle** - indicates how the angle is rotated
+Note that dx and dy are how motion is calculated. The other properties are used to calculate dx and dy
+for convenience.  Note also that the sprite does not have to be pointed in the motion of travel
+
+### Status Properties
+* **visible** - Boolean. If visible is false, sprite is moved off-screen, no longer responds to collisions or
+  boundary checks. Change with hide() and show() methods for best performance.
+* **mouseOver** - Boolean.  True if mouse is hovering over this sprite
+* **mouseDown** - Boolean. True if mouseOver and mouse button is currently pressed
+* **clicked** - Boolean. True if mouse has been clicked and released over this sprite
+
+### Boundary Action Constants
+These constants are legal values for the setBoundAction() method.
+* **WRAP** - When the sprite leaves the screen, it appears at opposite side
+* **BOUNCE** - When the sprite leaves the screen, it bounces off of the edge
+* **STOP** - The sprite stops at the screen boundary
+* **HIDE** - The sprite's visibility is set to Fals
+* **Continue** - The sprite continues to move off-screen
+
+## Appearance Methods
+These methods are used to configure the appearance of the sprite object
+
+* **setImage(imageFile)** - loads imageFile (a valid image in png, gif, or jpg format). For best performance,
+  image should be facing to the right, and should not have a lot of extra space around it.
+* **setSize(width, height)** - sets the size of the image to the expected width and height.
+* **colorRect(color, size)** - Sets the sprite to have a particular color and size.  Color is any pygame color
+  and size is an (x, y) tuple.  Useful for prototyping if you don't have an image handy.
+* **hide()** - make the sprite invisible. Sprite remains in memory, but is moved off-screen and does not respond to
+  collisions or boundary checks.
+* **show()** - The sprite is made visible. It may be necessary to specify new position and speed.
+
+## Motion Methods
+These methods (along with the associated propertied) are used to move the sprite.
+* **setAngle(angle)** - sets both the imageAngle and moveAngle to the appropriate values. Note angles are in pyGame degree units
+* **turnBy(angle)** - turns by the angle amount. Positive angles are counter-clockwise.
+* **forward(distance)** - moves distance pixels in the curren image angle direction
+* **addForce(amt, angle)** - adds a force vector to the sprite at the speed and angle specified. Used for gravity and other forces
+
+## Event Methods
+These methods are used to check the status of the Sprite.
+* **process()** - This event is empty by default. In a subclassed Sprite, this event will be called once per frame. The sprite's
+  event-handling code will normally go in the process() method.
+* **setBoundAction(action)** - Determines what will happen when the sprite attempts to leave the screen. Use the Boundary Action Constants
+* **checkBounds()** - Checks the boundary conditions.  Normally this is done for you according to the boundAction you set. But you can
+  overwrite this method if you want some other boundary action. You never need to explicitly call this method as it is called automatically
+  for each sprite.
+* **collidesWith(sprite)** - determines if this sprite is colliding with another sprite. True if collided using AABB method.
+* **DISTANCETO(point)** - determines distance between the center of this sprite and another point (usually position of another sprite or mouse)
+* **DIRTO(point)** - determines angle between the center of this sprite and another point.
+* **isKeyPressed(key)** - key is a pygame keyboard constant.  True if that key is currently pressed.
