@@ -121,11 +121,13 @@ These constants are legal values for the setBoundAction() method.
 * **HIDE** - The sprite's visibility is set to Fals
 * **Continue** - The sprite continues to move off-screen
 
-## Appearance Methods
+### Appearance Methods
 These methods are used to configure the appearance of the sprite object
 
 * **setImage(imageFile)** - loads imageFile (a valid image in png, gif, or jpg format). For best performance,
   image should be facing to the right, and should not have a lot of extra space around it.
+* **copyImage(imageSurface)** - copies a surface as the new sprite image. Normally used with the spritesheet
+  class for animation.
 * **setSize(width, height)** - sets the size of the image to the expected width and height.
 * **colorRect(color, size)** - Sets the sprite to have a particular color and size.  Color is any pygame color
   and size is an (x, y) tuple.  Useful for prototyping if you don't have an image handy.
@@ -134,14 +136,14 @@ These methods are used to configure the appearance of the sprite object
 * **show()** - The sprite is made visible. It may be necessary to specify new position and speed.
 * **drawTrace(color)** - draws a line from the previous position to the current one
 
-## Motion Methods
+### Motion Methods
 These methods (along with the associated propertied) are used to move the sprite.
 * **setAngle(angle)** - sets both the imageAngle and moveAngle to the appropriate values. Note angles are in pyGame degree units
 * **turnBy(angle)** - turns by the angle amount. Positive angles are counter-clockwise.
 * **forward(distance)** - moves distance pixels in the curren image angle direction
 * **addForce(amt, angle)** - adds a force vector to the sprite at the speed and angle specified. Used for gravity and other forces
 
-## Event Methods
+### Event Methods
 These methods are used to check the status of the Sprite.
 * **process()** - This event is empty by default. In a subclassed Sprite, this event will be called once per frame. The sprite's
   event-handling code will normally go in the process() method.
@@ -153,3 +155,65 @@ These methods are used to check the status of the Sprite.
 * **distanceTo(point)** - determines distance between the center of this sprite and another point (usually position of another sprite or mouse)
 * **dirTo(point)** - determines angle between the center of this sprite and another point.
 * **isKeyPressed(key)** - key is a pygame keyboard constant.  True if that key is currently pressed.
+
+## GUI Elements
+SimpleGE includes a simple but effective GUI system.  GUI elements are also based on the pygame Sprite object, so they should be added to the 
+sprite list like other sprites.  However, they are more focused on communication with the user than moving around, so they have different
+attributes and methods.
+
+### Label
+The label is the basic GUI Element.  It prints text on the screen. It is mainly used for score, time, and other information. It can be used
+as-is, or can be subclassed if you want to give it custom behavior. The Label object is designed to present a single line of text.
+**Properties**
+* **font** - allows you to specify a pygame font object. Default is freesansbold.ttf, which comes with pygame.
+* **text** - the text to be rendered.  You can change the text at any time.
+* **fgColor** - a pygame color, which will be the color of the rendered text
+* **bgColor** - a pygame color, which will be the background if clearBack is False
+* **center** - an (x, y) tuple representing the position of the object
+* **size** - an (x, y) tuple representing the size of the label. You may need to adjust if you anticipate long text
+
+**Methods**
+* **process()** - Overwrite this method in a subclass to give the label some custom behavior
+* **hide()** - hide the label
+* **show()** - show the label
+
+### Button
+The button class is subclassed from the Label, so it has all the same behavior as the label. However, it is intended
+as a basic input element, so it has some extra properties used to determine if the user is pressing the button:
+* **active** - True if the mouse is currently clicked on the button
+* **clicked** - True if the mouse has been clicked and released over the button (this is normally what you want)
+ 
+ ### TxtInput
+ A basic text input field.  Based on the button, so includes all features of Label and Button. Click on the label to start
+ input, and then anything typed will be added to the text element. Note that to make this work, you need to call the TxtInput's
+ readKeys() method from the Scene's doEvents() method, passing the event object.
+
+ * **readKeys()** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
+   backspace to delete the last character and delete to delete the current text.  May not work well with other keyboard
+   inputs.
+
+### Scroller
+Based on the Button class, so includes all properties and methods of Button and Label. Used for basic numeric input.
+By default, the scroller displays a numeric value.  Clicking on the left side of the scroller makes the value smaller,
+and clicking on the right side makes it larger.  Additional properties allow you to adjust the behavior of the object:
+* **value** - numeric value
+* **minValue** - smallest allowed value
+* **maxValue** - largest allowed value
+* **increment** - how much the value will change when clicked.
+
+### MultiLabel
+The multilabel is a multi-line label.  It is similar to the Label class, but it includes a list of textLines. It can
+also be clicked like a button. It is most frequently used for game instructions or feedback
+**Properties**
+* **textLines** - a list of strings.  Each element will be a line. Try to make them similar in length for best performance
+* **font** - a pygame Font
+* **fgColor** - foreground color
+* **bgColor** - background color
+* **center** - (x, y) tuple: center of multiLabel
+* **size** - (x, y) tuple: size of multiLabel. You may have to adjust this by hand, as it's hard to predict text size
+* **active** - True if the mouse is currently clicked over this object
+* **clicked** - True if the mouse has been clicked and released over this object
+
+ **Methods**
+ * **show()** - shows the element
+ * **hide()** - hides the element
