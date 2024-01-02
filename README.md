@@ -183,37 +183,68 @@ as a basic input element, so it has some extra properties used to determine if t
 * **active** - True if the mouse is currently clicked on the button
 * **clicked** - True if the mouse has been clicked and released over the button (this is normally what you want)
  
- ### TxtInput
+### TxtInput
  A basic text input field.  Based on the button, so includes all features of Label and Button. Click on the label to start
  input, and then anything typed will be added to the text element. Note that to make this work, you need to call the TxtInput's
  readKeys() method from the Scene's doEvents() method, passing the event object.
 
- * **readKeys()** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
+* **readKeys()** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
    backspace to delete the last character and delete to delete the current text.  May not work well with other keyboard
    inputs.
 
 ### Scroller
-Based on the Button class, so includes all properties and methods of Button and Label. Used for basic numeric input.
-By default, the scroller displays a numeric value.  Clicking on the left side of the scroller makes the value smaller,
-and clicking on the right side makes it larger.  Additional properties allow you to adjust the behavior of the object:
-* **value** - numeric value
-* **minValue** - smallest allowed value
-* **maxValue** - largest allowed value
-* **increment** - how much the value will change when clicked.
+ Based on the Button class, so includes all properties and methods of Button and Label. Used for basic numeric input.
+ By default, the scroller displays a numeric value.  Clicking on the left side of the scroller makes the value smaller,
+ and clicking on the right side makes it larger.  Additional properties allow you to adjust the behavior of the object:
+ * **value** - numeric value
+ * **minValue** - smallest allowed value
+ * **maxValue** - largest allowed value
+ * **increment** - how much the value will change when clicked.
 
 ### MultiLabel
-The multilabel is a multi-line label.  It is similar to the Label class, but it includes a list of textLines. It can
-also be clicked like a button. It is most frequently used for game instructions or feedback
-**Properties**
-* **textLines** - a list of strings.  Each element will be a line. Try to make them similar in length for best performance
-* **font** - a pygame Font
-* **fgColor** - foreground color
-* **bgColor** - background color
-* **center** - (x, y) tuple: center of multiLabel
-* **size** - (x, y) tuple: size of multiLabel. You may have to adjust this by hand, as it's hard to predict text size
-* **active** - True if the mouse is currently clicked over this object
-* **clicked** - True if the mouse has been clicked and released over this object
-
+ The multilabel is a multi-line label.  It is similar to the Label class, but it includes a list of textLines. It can
+ also be clicked like a button. It is most frequently used for game instructions or feedback
+ **Properties**
+ * **textLines** - a list of strings.  Each element will be a line. Try to make them similar in length for best performance
+ * **font** - a pygame Font
+ * **fgColor** - foreground color
+ * **bgColor** - background color
+ * **center** - (x, y) tuple: center of multiLabel
+ * **size** - (x, y) tuple: size of multiLabel. You may have to adjust this by hand, as it's hard to predict text size
+ * **active** - True if the mouse is currently clicked over this object
+ * **clicked** - True if the mouse has been clicked and released over this object
+ 
  **Methods**
  * **show()** - shows the element
  * **hide()** - hides the element
+
+## Utility Classes
+SimpleGame comes with a few other classes to make your life easier as a game programmer.
+
+### Timer
+The timer is a basic time element.  You can have as many timers as you want with no performance penalty. 
+You can start the timer at any time, and you can get the time since last started. If you want a count-down timer,
+You can set the totalTime before you start the timer, and then get the time left. Note that the timer is NOT a 
+visual element.  If you want, you can create a label showing the time or time left.
+
+**Properties**
+* **totalTime** - how much time is left, used by *getTimeLeft()*
+
+**Methods**
+* **start()** - starts or restarts the time
+* **getElapsedTime()** - returns time (in seconds) since last started
+* **getTimeLeft()** - returns totalTime - elapsed time. Good for countdown timers
+
+### Sound
+Pygame sounds are quite easy (if they work at all) but we have also provided a sound class to make it even easier
+**Constructor**
+mysound = simpleGE.Sound(soundFileName)
+Note that the sound should be .wav, .ogg, or .mp3 You may need to resample using Audacity or the like to get the 
+sound to play correctly.
+**Methods**
+There is only one method:
+* **play()** - this plays the current sound one time
+Note that the sound object is for sound effects.  For background music,
+see the [pygame.mixer.music](https://www.pygame.org/docs/ref/music.html) documentation.
+
+
