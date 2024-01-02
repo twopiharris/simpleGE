@@ -411,6 +411,40 @@ class Sprite(pygame.sprite.Sprite):
     def isKeyPressed(self, key):
         #convenience method
         return self.scene.isKeyPressed(key)    
+    
+    def distanceTo(self, point):
+        """ returns distance to any point in pixels
+            can be used in circular collision detection
+        """
+        (pointx, pointy) = point
+        dx = self.x - pointx
+        dy = self.y - pointy
+        
+        dist = math.sqrt((dx * dx) + (dy * dy))
+        return dist
+    
+    def dirTo(self, point):
+        """ returns direction (in degrees) to 
+            a point """
+        
+        (pointx, pointy) = point
+        dx = self.x - pointx
+        dy = self.y - pointy
+        dy *= -1
+        
+        radians = math.atan2(dy, dx)
+        dir = radians * 180 / math.pi
+        dir += 180
+        return dir
+    
+    def drawTrace(self, color=(0x00, 0x00, 0x00)):
+        """ traces a line between previous position
+            and current position of object 
+        """
+        pygame.draw.line(self.scene.background, color, self.oldCenter,
+                         self.rect.center, 3)
+        self.screen.blit(self.scene.background, (0, 0))
+
         
 
 class BasicSprite(pygame.sprite.Sprite):
