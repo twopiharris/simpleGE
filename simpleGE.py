@@ -375,6 +375,12 @@ class Sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.imageMaster = self.image
         
+    def copyImage(self, imageSurface):
+        """ copies a surface as a new image. mainly used in 
+            animation """
+        self.image = imageSurface
+        self.imageMaster = self.image 
+        
     def colorRect(self, color, size):
         self.image = pygame.Surface(size, pygame.SRCALPHA)
         self.image.fill(color)
