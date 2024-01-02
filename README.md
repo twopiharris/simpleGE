@@ -1,11 +1,10 @@
-# simpleGE
- 
-## Overview
+# simpleGE Overview
 
 New programmers are very interested in game development, but arcade games can be 
 extremely difficult for new programmers to write.  Scratch is a powerful and popular tool for beginners, but the tile-based programming has limitations, and does not always feel like 'real' programming in a traditional language.  More powerful graphics APIs like Pygame are extremely powerful, but can be very complex for beginners.  Stock pygame requires a fair amount of math and programming skill to use well.  A number of attempts to simplify pygame have been created for educational purposes (specifically pygame zero.)  However, when examining this tool for use in an educational setting, I found it to be too limiting.  Specifically, it did not allow for rotating sprites or sprite sheet animation.  The larger gameDev tools like Unity, Unreal, and Godot can be very intimidating, and none uses stock Python.
 
 SimpleGE is derived from two previous engines I wrote for various books and teaching experiences.  It is designed to be powerful, flexible, and reasonably easy to use. It has a relatively small number of objects to learn, but you can use it to make a surprising range of 2D games. It is a very light package, and runs fine on raspberry pis and chromebooks.
+
 ## The Scene
 The primary class in simpleGE is the scene.  If you've tried to write pygame code, you end up writing the same (somewhat mystic) main code every time.  The scene class manages all of this, allowing you to create an object that encapsulates the screen and the timing system.  You can use the Scene class as-is, or you can subclass it to create your own custom scenes.  You can have as many scenes as you want in your game, so you can build separate scenes for instructions, game play, multiple levels of your game, and end-of game summaries.  The Scene class can be used as-is, or can be subclassed for more flexibility.
 
@@ -238,12 +237,15 @@ visual element.  If you want, you can create a label showing the time or time le
 ### Sound
 Pygame sounds are quite easy (if they work at all) but we have also provided a sound class to make it even easier
 **Constructor**
-mysound = simpleGE.Sound(soundFileName)
-Note that the sound should be .wav, .ogg, or .mp3 You may need to resample using Audacity or the like to get the 
+mysound = simpleGE.Sound(soundFileName)  
+
+Note that the sound should be in .wav, .ogg, or .mp3 format. You may need to resample using Audacity or the like to get the 
 sound to play correctly.
+
 **Methods**
 There is only one method:
 * **play()** - this plays the current sound one time
+
 Note that the sound object is for sound effects.  For background music,
 see the [pygame.mixer.music](https://www.pygame.org/docs/ref/music.html) documentation.
 
