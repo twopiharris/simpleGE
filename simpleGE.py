@@ -141,6 +141,15 @@ class Sprite(pygame.sprite.Sprite):
     def right(self, right):
         self.rect.right = right
         self.x = self.rect.centerx
+        
+    @property 
+    def position(self):
+        return ((self.x, self.y))
+    
+    @position.setter 
+    def position(self, position):
+        self.x = position[0]
+        self.y = position[1]
 
     @property 
     def dx(self):
@@ -232,6 +241,23 @@ class Sprite(pygame.sprite.Sprite):
         self.x += dx
         self.y += dy        
         
+    def addForce(self, amt, angle):
+        """ apply amt of thrust in angle.
+            change speed and dir accordingly
+            add a force straight down to simulate gravity
+            in rotation direction to simulate spacecraft thrust
+            in dir direction to accelerate forward
+            at an angle for retro-rockets, etc.
+        """
+
+        #calculate dx dy based on angle
+        radians = angle * math.pi / 180
+        ddx = amt * math.cos(radians)
+        ddy = amt * math.sin(radians) * -1
+        
+        self.dx += ddx
+        self.dy += ddy
+        
     def checkClicked(self):
         self.clicked = False
         
@@ -262,20 +288,7 @@ class Sprite(pygame.sprite.Sprite):
         self.process()
         
     def checkBounds(self):
-        """
-        scrWidth = self.screen.get_width()
-        scrHeight = self.screen.get_height()
-        if self.visible:
-            if self.x > scrWidth:
-                self.x = 0
-            if self.x < 0:
-                self.x = scrWidth
-            if self.y > scrHeight:
-                self.y = 0
-            if self.y < 0:
-                self.y = scrHeight
-        """
-        
+
         """ checks boundary and acts based on 
             self.BoundAction.
             WRAP: wrap around screen (default)
@@ -285,6 +298,8 @@ class Sprite(pygame.sprite.Sprite):
             CONTINUE: keep going at present course and speed
             
             automatically called by update()
+            
+            over-write for your own collision behavior
         """
         
         # ignore boundaries if we are hidden
@@ -976,12 +991,12 @@ class Scene(object):
         to each other if needed    
     """
     
-    def __init__(self):
+    def __init__(self, size = (640, 480)):
         """ initialize the game engine
             set up a sample sprite for testing
         """
         pygame.init()
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode(size)
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((0, 0, 0))
         
@@ -1325,68 +1340,32 @@ class Thing(Sprite):
     
     def __init__(self, scene):
         super().__init__(scene)
-        self.colorRect("blue", (50, 20))
+        self.colorRect("blue", (50, 50))
         #self.setSize(50, 50)
-        self.setAngle(45)
+        self.x = 320
+        self.y = 10
+        
         
     def process(self):
+        self.addForce(.1, 270)
         
+        if self.y > 450:
+            self.y = 10
+            self.speed = 0
+            
         if self.isKeyPressed(pygame.K_UP):
-            self.speed += .1
-        if self.isKeyPressed(pygame.K_DOWN):
-            self.speed -= .1
-        if self.isKeyPressed(pygame.K_LEFT):
-            self.imageAngle += 5 
-            self.moveAngle += 5
-        if self.isKeyPressed(pygame.K_RIGHT):
-            self.imageAngle -= 5 
-            self.moveAngle -= 5
+            self.addForce(.5, 90)
+        if self.isKeyPressed(pygame.K_SPACE):
+            self.position = (320, 20)
             
-        if self.isKeyPressed(pygame.K_w):
-            self.boundAction = self.WRAP
-        elif self.isKeyPressed(pygame.K_b):
-            self.boundAction = self.BOUNCE
-            
-        self.scene.lblOut.text = f"m: {self.moveAngle}, i: {self.imageAngle}"
-        
-        barrier = self.scene.barrier
-        angle = self.moveAngle % 360
-        if angle < 45:
-            dir = "right"
-        elif angle < 135:
-            dir = "up"
-        elif angle < 225:
-            dir = "left"
-        elif angle < 315:
-            dir = "down"
-        else:
-            dir = "right"
-        
-        if self.collidesWith(barrier):
-
-            if dir == "right":
-                if self.right > barrier.left:
-                    self.right = barrier.left  
-                    self.speed = 0
-            if dir == "left":
-                if self.left < barrier.right:
-                    self.left = barrier.right 
-                    self.speed = 0    
-            if dir == "down":
-                if self.bottom > barrier.top:
-                    self.bottom = barrier.top 
-                    self.speed = 0
-            if dir == "up":
-                if self.top < barrier.bottom:
-                    self.top = barrier.bottom 
-                    self.speed = 0
+        self.scene.lblOut.text = f"({self.x:.2f}, {self.y:.2f})" 
 
 class LblOut(Label):
     def __init__(self):
         super().__init__()
         self.center = (320, 30)
         self.size = (200, 30)
-        self.fgColor = "blue"
+        self.fgColor = "black"
         self.bgColor = "white"
         self.clearBack = True
 
@@ -1395,16 +1374,13 @@ class Game(Scene):
     """ used only for testing purposes. not a formal part of simpleGE """
 
     def __init__(self):
-        super().__init__()
+        super().__init__((400, 400))
         self.background.fill("papayawhip")
         self.thing = Thing(self)
         
-        self.barrier = Sprite(self)
-        self.barrier.colorRect("red", (100, 100))
-        self.barrier.x = 320
-        self.barrier.y = 240
+
         self.lblOut = LblOut()
-        self.sprites = [self.lblOut, self.barrier, self.thing]
+        self.sprites = [self.lblOut, self.thing]
         
 if __name__ == "__main__":
     # change this code to test various features of the engine
