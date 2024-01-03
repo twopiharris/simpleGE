@@ -1,11 +1,10 @@
-# simpleGE
- 
-## Overview
+# simpleGE Overview
 
 New programmers are very interested in game development, but arcade games can be 
 extremely difficult for new programmers to write.  Scratch is a powerful and popular tool for beginners, but the tile-based programming has limitations, and does not always feel like 'real' programming in a traditional language.  More powerful graphics APIs like Pygame are extremely powerful, but can be very complex for beginners.  Stock pygame requires a fair amount of math and programming skill to use well.  A number of attempts to simplify pygame have been created for educational purposes (specifically pygame zero.)  However, when examining this tool for use in an educational setting, I found it to be too limiting.  Specifically, it did not allow for rotating sprites or sprite sheet animation.  The larger gameDev tools like Unity, Unreal, and Godot can be very intimidating, and none uses stock Python.
 
 SimpleGE is derived from two previous engines I wrote for various books and teaching experiences.  It is designed to be powerful, flexible, and reasonably easy to use. It has a relatively small number of objects to learn, but you can use it to make a surprising range of 2D games. It is a very light package, and runs fine on raspberry pis and chromebooks.
+
 ## The Scene
 The primary class in simpleGE is the scene.  If you've tried to write pygame code, you end up writing the same (somewhat mystic) main code every time.  The scene class manages all of this, allowing you to create an object that encapsulates the screen and the timing system.  You can use the Scene class as-is, or you can subclass it to create your own custom scenes.  You can have as many scenes as you want in your game, so you can build separate scenes for instructions, game play, multiple levels of your game, and end-of game summaries.  The Scene class can be used as-is, or can be subclassed for more flexibility.
 
@@ -121,11 +120,13 @@ These constants are legal values for the setBoundAction() method.
 * **HIDE** - The sprite's visibility is set to Fals
 * **Continue** - The sprite continues to move off-screen
 
-## Appearance Methods
+### Appearance Methods
 These methods are used to configure the appearance of the sprite object
 
 * **setImage(imageFile)** - loads imageFile (a valid image in png, gif, or jpg format). For best performance,
   image should be facing to the right, and should not have a lot of extra space around it.
+* **copyImage(imageSurface)** - copies a surface as the new sprite image. Normally used with the spritesheet
+  class for animation.
 * **setSize(width, height)** - sets the size of the image to the expected width and height.
 * **colorRect(color, size)** - Sets the sprite to have a particular color and size.  Color is any pygame color
   and size is an (x, y) tuple.  Useful for prototyping if you don't have an image handy.
@@ -134,14 +135,14 @@ These methods are used to configure the appearance of the sprite object
 * **show()** - The sprite is made visible. It may be necessary to specify new position and speed.
 * **drawTrace(color)** - draws a line from the previous position to the current one
 
-## Motion Methods
+### Motion Methods
 These methods (along with the associated propertied) are used to move the sprite.
 * **setAngle(angle)** - sets both the imageAngle and moveAngle to the appropriate values. Note angles are in pyGame degree units
 * **turnBy(angle)** - turns by the angle amount. Positive angles are counter-clockwise.
 * **forward(distance)** - moves distance pixels in the curren image angle direction
 * **addForce(amt, angle)** - adds a force vector to the sprite at the speed and angle specified. Used for gravity and other forces
 
-## Event Methods
+### Event Methods
 These methods are used to check the status of the Sprite.
 * **process()** - This event is empty by default. In a subclassed Sprite, this event will be called once per frame. The sprite's
   event-handling code will normally go in the process() method.
@@ -153,3 +154,99 @@ These methods are used to check the status of the Sprite.
 * **distanceTo(point)** - determines distance between the center of this sprite and another point (usually position of another sprite or mouse)
 * **dirTo(point)** - determines angle between the center of this sprite and another point.
 * **isKeyPressed(key)** - key is a pygame keyboard constant.  True if that key is currently pressed.
+
+## GUI Elements
+SimpleGE includes a simple but effective GUI system.  GUI elements are also based on the pygame Sprite object, so they should be added to the 
+sprite list like other sprites.  However, they are more focused on communication with the user than moving around, so they have different
+attributes and methods.
+
+### Label
+The label is the basic GUI Element.  It prints text on the screen. It is mainly used for score, time, and other information. It can be used
+as-is, or can be subclassed if you want to give it custom behavior. The Label object is designed to present a single line of text.
+**Properties**
+* **font** - allows you to specify a pygame font object. Default is freesansbold.ttf, which comes with pygame.
+* **text** - the text to be rendered.  You can change the text at any time.
+* **fgColor** - a pygame color, which will be the color of the rendered text
+* **bgColor** - a pygame color, which will be the background if clearBack is False
+* **center** - an (x, y) tuple representing the position of the object
+* **size** - an (x, y) tuple representing the size of the label. You may need to adjust if you anticipate long text
+
+**Methods**
+* **process()** - Overwrite this method in a subclass to give the label some custom behavior
+* **hide()** - hide the label
+* **show()** - show the label
+
+### Button
+The button class is subclassed from the Label, so it has all the same behavior as the label. However, it is intended
+as a basic input element, so it has some extra properties used to determine if the user is pressing the button:
+* **active** - True if the mouse is currently clicked on the button
+* **clicked** - True if the mouse has been clicked and released over the button (this is normally what you want)
+ 
+### TxtInput
+ A basic text input field.  Based on the button, so includes all features of Label and Button. Click on the label to start
+ input, and then anything typed will be added to the text element. Note that to make this work, you need to call the TxtInput's
+ readKeys() method from the Scene's doEvents() method, passing the event object.
+
+* **readKeys()** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
+   backspace to delete the last character and delete to delete the current text.  May not work well with other keyboard
+   inputs.
+
+### Scroller
+ Based on the Button class, so includes all properties and methods of Button and Label. Used for basic numeric input.
+ By default, the scroller displays a numeric value.  Clicking on the left side of the scroller makes the value smaller,
+ and clicking on the right side makes it larger.  Additional properties allow you to adjust the behavior of the object:
+ * **value** - numeric value
+ * **minValue** - smallest allowed value
+ * **maxValue** - largest allowed value
+ * **increment** - how much the value will change when clicked.
+
+### MultiLabel
+ The multilabel is a multi-line label.  It is similar to the Label class, but it includes a list of textLines. It can
+ also be clicked like a button. It is most frequently used for game instructions or feedback
+ **Properties**
+ * **textLines** - a list of strings.  Each element will be a line. Try to make them similar in length for best performance
+ * **font** - a pygame Font
+ * **fgColor** - foreground color
+ * **bgColor** - background color
+ * **center** - (x, y) tuple: center of multiLabel
+ * **size** - (x, y) tuple: size of multiLabel. You may have to adjust this by hand, as it's hard to predict text size
+ * **active** - True if the mouse is currently clicked over this object
+ * **clicked** - True if the mouse has been clicked and released over this object
+ 
+ **Methods**
+ * **show()** - shows the element
+ * **hide()** - hides the element
+
+## Utility Classes
+SimpleGame comes with a few other classes to make your life easier as a game programmer.
+
+### Timer
+The timer is a basic time element.  You can have as many timers as you want with no performance penalty. 
+You can start the timer at any time, and you can get the time since last started. If you want a count-down timer,
+You can set the totalTime before you start the timer, and then get the time left. Note that the timer is NOT a 
+visual element.  If you want, you can create a label showing the time or time left.
+
+**Properties**
+* **totalTime** - how much time is left, used by *getTimeLeft()*
+
+**Methods**
+* **start()** - starts or restarts the time
+* **getElapsedTime()** - returns time (in seconds) since last started
+* **getTimeLeft()** - returns totalTime - elapsed time. Good for countdown timers
+
+### Sound
+Pygame sounds are quite easy (if they work at all) but we have also provided a sound class to make it even easier
+**Constructor**
+mysound = simpleGE.Sound(soundFileName)  
+
+Note that the sound should be in .wav, .ogg, or .mp3 format. You may need to resample using Audacity or the like to get the 
+sound to play correctly.
+
+**Methods**
+There is only one method:
+* **play()** - this plays the current sound one time
+
+Note that the sound object is for sound effects.  For background music,
+see the [pygame.mixer.music](https://www.pygame.org/docs/ref/music.html) documentation.
+
+
