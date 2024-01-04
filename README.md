@@ -117,7 +117,7 @@ These constants are legal values for the setBoundAction() method.
 * **WRAP** - When the sprite leaves the screen, it appears at opposite side
 * **BOUNCE** - When the sprite leaves the screen, it bounces off of the edge
 * **STOP** - The sprite stops at the screen boundary
-* **HIDE** - The sprite's visibility is set to Fals
+* **HIDE** - The sprite's visibility is set to False
 * **Continue** - The sprite continues to move off-screen
 
 ### Appearance Methods
@@ -249,4 +249,44 @@ There is only one method:
 Note that the sound object is for sound effects.  For background music,
 see the [pygame.mixer.music](https://www.pygame.org/docs/ref/music.html) documentation.
 
+## SpriteSheet
 
+The spritesheet class is a utility to help you manage spritesheets.  These are images with several sub-images.  Often
+they are used for tiles in a tile map or in character animation.  Download the spritesheet image you want into your 
+working directory, and this class can help you extract the images you need for your own animations.  You can have more
+than one SpriteSheet class working with the same spritesheet image if you wish. It is often useful to examine the spritesheet
+image in an image editor like Gimp or Krita so you can see how large the images are and where they are located.
+
+**Constructor**  
+The constructor is a bit complex, as the spritesheet only works when it knows a fair amount about the image it is working with:  
+walkAnim = SpriteSheet(imageFile, cellSize, numRows, numCols, delay)  
+
+All of the parameters are attributes that can be changed.  
+* **imageFile** - the file name of the spritesheet image
+* **cellSize** - an (x, y) tuple containing the size of a single sub-image.  This is usually a power of two, like (32, 32) or (64, 64)
+* **numRows** - if you are working with an animation, you are normally interested in several rows of images.
+  This parameter describes how many rows in the animation. Normally each row will describe a different direction
+* **numCols** - This parameter describes how many columns, which is normally the number of frames in the animation cycle
+* **delay** - This parameter indicates the delay (in seconds) between showing frames.  You can adjust this to specify the speed of
+  the animation. If you skip this parameter, it will be .1.
+
+If your spritesheet image contains only one animation (say a walk cycle going in four directions) this is all you need.  However,
+many spritesheets contain multiple animations, so you can change the offset property to indicate where a particular animation begins
+
+**Properties** 
+All of the parameters of the constructor, plus:
+* **timer** - a simpleGE timer. It is used automatically to manage the delay, so you shouldn't need to mess with it
+* **offset** - an (x, y) coordinate pair indicating the upper left corner (in pixels) of the current animation.  Useful when a spritesheet
+  image contains multiple animations.
+* **animImage** - the entire spritesheet animation.  It will be used automatically, so you shouldn't need to do anything with it.) h
+* **startCol** - this indicates the position of the first cell of the animation. Normally this is zero, but some spritesheets (specifically
+  those from the popular liberated pixel cup series) have an idle animation on cell zero, so in this case set startCol to 1.
+* **animRow** - Current row of the animation.
+* **animCol** - Current column of the animation. 
+
+**Methods**
+* **getCellImage(row, col)** - returns a single pygame Surface representing the image at a particular cell row and column. Use the sprite's
+  copyImage() method to copy this image to your current sprite.  GetCellImage is usually used for extracting a single cell, like in a tile map.
+  Row and column are cell values counted from the offset, not pixels.
+* **getNext(self, animRow)** - returns the next image in the current row. Returs a pygame Surface representing the next image of the current row.in
+  This automatically cycles back to the startCol, so the animation will continue. Use the Sprite's copyImage() method to use this Surface.
