@@ -44,15 +44,14 @@ class LblScore(simpleGE.Label):
         super().update()
         self.image.set_colorkey(self.bgColor)
         
-        
 class LblTimer(simpleGE.Label):
     def __init__(self):
         super().__init__()
         self.text = "Time"
         self.center = (550, 20)
         self.size = (150, 30)
-        self.fgColor = "yellow"
-        self.bgColor = None       
+        self.fgColor = "white"
+        self.bgColor = "black"       
         
 class Game(simpleGE.Scene):
     def __init__(self):
@@ -67,7 +66,7 @@ class Game(simpleGE.Scene):
         
         self.score = 0
         self.timer = simpleGE.Timer()
-        self.maxTime = 15
+        self.timer.totalTime = 15
         
         self.sprites = [self.lblScore, 
                         self.lblTimer, 
@@ -83,7 +82,7 @@ class Game(simpleGE.Scene):
                 self.lblScore.text = f"Score {self.score}"
         
         #check time
-        timeLeft = self.maxTime - self.timer.getElapsedTime()
+        timeLeft = self.timer.getTimeLeft()
         self.lblTimer.text = f"Time Left: {timeLeft:.2f}"
         if timeLeft < 0:
             self.stop()

@@ -204,6 +204,14 @@ class Sprite(pygame.sprite.Sprite):
         self.moveAngle += angle
         self.imageAngle += angle
   
+    def copyImage(self, imageSurface):
+        """ copies a surface as a new image. mainly used in 
+            animation 
+        """
+        self.image = imageSurface
+        self.imageMaster = self.image 
+        self.imageAngle = self.__imageAngle
+        
     def vectorFromSpeedAngle(self):
         #calculates dx and dy from speed and angle
         
@@ -343,8 +351,7 @@ class Sprite(pygame.sprite.Sprite):
             
             elif self.boundAction == self.HIDE:
                 if offScreen:
-                    self.speed = 0
-                    self.position = (-1000, -1000)
+                    self.hide()
             
             elif self.boundAction == self.CONTINUE:
                 pass
@@ -371,12 +378,7 @@ class Sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.imageMaster = self.image
         
-    def copyImage(self, imageSurface):
-        """ copies a surface as a new image. mainly used in 
-            animation 
-        """
-        self.image = imageSurface
-        self.imageMaster = self.image 
+
         
     def colorRect(self, color, size):
         """ sets image to a specific color and size

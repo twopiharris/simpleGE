@@ -65,7 +65,7 @@ class Game(simpleGE.Scene):
         
         self.score = 0
         self.timer = simpleGE.Timer()
-        self.maxTime = 15
+        self.timer.totalTime = 15
         
         self.sprites = [self.lblScore, 
                         self.lblTimer, 
@@ -81,11 +81,10 @@ class Game(simpleGE.Scene):
                 self.lblScore.text = f"Score {self.score}"
         
         #check time
-        timeLeft = self.maxTime - self.timer.getElapsedTime()
+        timeLeft = self.timer.getTimeLeft()
         self.lblTimer.text = f"Time Left: {timeLeft:.2f}"
         if timeLeft < 0:
-            self.stop()
-        
+            self.stop()        
 
 def main():
     game = Game()
