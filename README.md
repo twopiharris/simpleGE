@@ -117,7 +117,7 @@ These constants are legal values for the setBoundAction() method.
 * **WRAP** - When the sprite leaves the screen, it appears at opposite side
 * **BOUNCE** - When the sprite leaves the screen, it bounces off of the edge
 * **STOP** - The sprite stops at the screen boundary
-* **HIDE** - The sprite's visibility is set to Fals
+* **HIDE** - The sprite's visibility is set to False
 * **Continue** - The sprite continues to move off-screen
 
 ### Appearance Methods
