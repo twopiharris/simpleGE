@@ -137,7 +137,6 @@ class Game(simpleGE.Scene):
             newTile.x = xPos
             newTile.y = yPos
             self.tileset[row].append(newTile)
-
                 
 def main():
     game = Game()
