@@ -8,7 +8,7 @@ class Game(simpleGE.Scene):
         self.box = simpleGE.Sprite(self)
         self.box.dx = 5
         
-        self.sprites = self.box
+        self.sprites = [self.box]
 
 def main():
     game = Game()

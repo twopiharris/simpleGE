@@ -22,7 +22,7 @@ class Player(simpleGE.Sprite):
 def main():
     game = simpleGE.Scene()
     game.player = Player(game)
-    game.sprites = game.player
+    game.sprites = [game.player]
     game.start()
 
 if __name__ == "__main__":

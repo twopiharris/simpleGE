@@ -37,12 +37,10 @@ class LblScore(simpleGE.Label):
         self.fgColor = "white"
         self.bgColor = "black"
         self.text = "Score"
+        self.clearBack = True
         self.center = (50, 20)
         self.size = (150, 30)
         
-    def update(self):
-        super().update()
-        self.image.set_colorkey(self.bgColor)
         
 class LblTimer(simpleGE.Label):
     def __init__(self):
@@ -50,6 +48,7 @@ class LblTimer(simpleGE.Label):
         self.text = "Time"
         self.center = (550, 20)
         self.size = (150, 30)
+        self.clearBack = True
         self.fgColor = "white"
         self.bgColor = "black"       
         
@@ -68,10 +67,10 @@ class Game(simpleGE.Scene):
         self.timer = simpleGE.Timer()
         self.timer.totalTime = 15
         
-        self.sprites = [self.lblScore, 
-                        self.lblTimer, 
-                        self.player, 
-                        self.targets]
+        self.sprites = [self.player, 
+                        self.targets,
+                        self.lblScore, 
+                        self.lblTimer]
         
     def process(self):
         #check for collisions
@@ -116,15 +115,15 @@ class GameOver(simpleGE.Scene):
         self.score = 0
         self.lblScore = simpleGE.Label()
         self.lblScore.text = f"Score: {self.score}"
-        self.lblScore.center = (320, 240)
+        self.lblScore.center = (320, 140)
 
         self.btnAgain = simpleGE.Button()
         self.btnAgain.text = "Play again"
-        self.btnAgain.center = (150, 350)
+        self.btnAgain.center = (150, 250)
 
         self.btnQuit = simpleGE.Button()
         self.btnQuit.text = "Quit"
-        self.btnQuit.center = (450, 350)
+        self.btnQuit.center = (450, 250)
 
         self.sprites = [self.lblScore, self.btnAgain, self.btnQuit]
 

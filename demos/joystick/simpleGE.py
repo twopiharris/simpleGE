@@ -1073,7 +1073,18 @@ class Scene(object):
         while self.keepGoing:
             self.__mainLoop()
         pygame.quit()
-
+        
+    def setImage(self, imageFile, autoSize = True):
+        """ loads image to background.  By default, the image
+            is resized to the screen size. You can pass 'False' as
+            the second parameter to turn off this behavior. 
+        """
+        self.background = pygame.image.load(imageFile)
+        if autoSize:
+            newX = self.screen.get_size()[0]
+            newY = self.screen.get_size()[1]
+            self.background = pygame.transform.scale(self.background, (newX, newY))
+            
     def stop(self):
         """stops the loop"""
         self.keepGoing = False
@@ -1135,6 +1146,7 @@ class Scene(object):
         """ just like update, but added for consistency with 
             sprite
         """
+        pass
     
     def setCaption(self, title):
         """ set's the scene's title text """
