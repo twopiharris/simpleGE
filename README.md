@@ -54,6 +54,8 @@ size is a tuple.  If left out, size is (640, 480)
   Overwrite for code you want to execute every frame.
 * **doEvents(event)** - is called once for every event in event handler. Overwrite for code that needs access
   to pygame event objects (especially keyboard input)
+* **setImage(imageFile, autoSize = True)** - Loads the image into the background of the Scene. If autoSize is
+  not listed or set to true, the image will be resized to the Scene's size
 * **setCaption(caption)** - sets the caption of this window
 * **isKeyPressed(key)** - key should be a pygame keyboard constant. Returns True if that key is currently pressed
 
