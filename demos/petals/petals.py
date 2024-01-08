@@ -45,7 +45,7 @@ class Game(simpleGE.Scene):
             self.lblResult.text = f"{totalPetals} petals around the rose"
         
         if self.btnReveal.clicked:
-            self.lblResult.show((320, 310))
+            self.lblResult.show()
             
 class Die(simpleGE.Sprite):
     def __init__(self, scene):
@@ -87,6 +87,7 @@ class LblResult(simpleGE.Label):
         self.center = ((320, 310))
         self.text = "0 petals around the rose"
         self.size = ((250, 30))
+        #self.hide()
 
 class BtnReveal(simpleGE.Button):
     def __init__(self):
