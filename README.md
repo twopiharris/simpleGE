@@ -237,7 +237,7 @@ visual element.  If you want, you can create a label showing the time or time le
 * **getTimeLeft()** - returns totalTime - elapsed time. Good for countdown timers
 
 ### Sound
-Pygame sounds are quite easy (if they work at all) but we have also provided a sound class to make it even easier
+Pygame sounds are quite easy (if they work at all) but we have also provided a sound class to make it even easier  
 **Constructor**
 mysound = simpleGE.Sound(soundFileName)  
 
@@ -295,4 +295,21 @@ All of the parameters of the constructor, plus:
 
 # Tutorial Video
 If you want to see all this in action, check out [this](https://youtu.be/Owg3vPSXAjE) demo on youtube
+
+# Demos
+I have included a number of demos to illustrate various aspects of the engine, and as prototypes for students to begin their own games.
+* [basics](https://github.com/twopiharris/simpleGE/tree/main/demos/basics) - Going from zero to a basic game with scorekeeping, timing, and end game screen
+* [asteroids](https://github.com/twopiharris/simpleGE/tree/main/demos/asteroids) - Space-style motion, multiple sprites
+* [bullets](https://github.com/twopiharris/simpleGE/tree/main/demos/bullets) - Firing a single bullet, multi-bullets, bullets with gravity
+* [character](https://github.com/twopiharris/simpleGE/tree/main/demos/character) - Using a spritesheet for character animation
+* [flappy](https://github.com/twopiharris/simpleGE/tree/main/demos/flappy) - Basic gravity / rudimentary flappy bird starter
+* [joystick](https://github.com/twopiharris/simpleGE/tree/main/demos/joystick) - gamepad monitor, controlling sprites with gamepad
+* [lander](https://github.com/twopiharris/simpleGE/tree/main/demos/lander) - basic lunar lander clone, physics-based motion
+* [orbits](https://github.com/twopiharris/simpleGE/tree/main/demos/orbits) - basic orbital mechanics with Newton's Law.
+* [petals](https://github.com/twopiharris/simpleGE/tree/main/demos/petals) - Petals around the rose. Dice / Puzzle game with audio
+* [platformer](https://github.com/twopiharris/simpleGE/tree/main/demos/platformer) - basic platformer.  Jumping, collision detection, draggable blocks
+* [point and click](https://github.com/twopiharris/simpleGE/tree/main/demos/pointAndClick) - Transparent and semi-transparent hotspots, custom mouse cursor, moving towards mouse
+* [tile-based](https://github.com/twopiharris/simpleGE/tree/main/demos/tile-based) - Tile-based world maps, scrollable maps, editing, modifying move speed
+
+I have made videos for all of these demos, but I made them with an earlier (slightly more complex) version of the engine.  Watch for new videos as the semester progresses.
 
