@@ -46,7 +46,8 @@ size is a tuple.  If left out, size is (640, 480)
 * **background** - the background - A pygame surface drawn to screen every frame
 * **sprites** - a spriteList (technically an OrderedUpdates) All sprites must be added to this or another list.
   The list can contain sprites and / or tuples containing sprites. Sprites are drawn in the order they appear
-  on this list, with later items drawn on top of earlier elements. 
+  on this list, with later items drawn on top of earlier elements.
+  
 ### Standard Methods
 * **start()** - begins the animation loop for this scene. Control goes to this scene's event handlers
 * **stop()** - ends the animation loop for this scene. Control is reverted to calling function
@@ -93,7 +94,7 @@ The simpleGE Sprite class is inherited from the pygame Sprite.  So it has access
 * **top** - the top edge of the sprite
 * **bottom** - the bottom edge of the sprite
 * **position** - an (x, y) tuple containing the coordinates of the center of the sprite
-    
+
 You can get or set any of these elements, but ultimately they all manipulate the x and y values. Other properties
 are included for convenience
 
@@ -113,6 +114,7 @@ for convenience.  Note also that the sprite does not have to be pointed in the m
 * **mouseOver** - Boolean.  True if mouse is hovering over this sprite
 * **mouseDown** - Boolean. True if mouseOver and mouse button is currently pressed
 * **clicked** - Boolean. True if mouse has been clicked and released over this sprite
+  
 
 ### Boundary Action Constants
 These constants are legal values for the setBoundAction() method.
@@ -122,6 +124,12 @@ These constants are legal values for the setBoundAction() method.
 * **HIDE** - The sprite's visibility is set to False
 * **CONTINUE** - The sprite continues to move off-screen
 
+### Screen Boundaries
+The sprite 'knows' how large the screen is.  These properties are useful if you want to write your own
+boundary-checking routine or want to place the sprite in a random place on the screen.
+* **screenWidth** - the width of the screen. 
+* **screenHeight** - the height of the screen.
+  
 ### Appearance Methods
 These methods are used to configure the appearance of the sprite object
 
