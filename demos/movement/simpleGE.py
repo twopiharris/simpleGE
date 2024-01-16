@@ -205,6 +205,7 @@ class Sprite(pygame.sprite.Sprite):
     def turnBy(self, angle):
         self.moveAngle += angle
         self.imageAngle += angle
+        #self.vectorFromSpeedAngle
   
     def copyImage(self, imageSurface):
         """ copies a surface as a new image. mainly used in 
@@ -260,6 +261,8 @@ class Sprite(pygame.sprite.Sprite):
         
         self.dx += ddx
         self.dy += ddy
+        
+        self.speedAngleFromVector()
         
     def checkClicked(self):
         self.clicked = False
