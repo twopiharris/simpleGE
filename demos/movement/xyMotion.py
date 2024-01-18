@@ -64,7 +64,7 @@ class BlueBox(simpleGE.Sprite):
         self.x = random.randint(0, self.screenWidth)
         self.y = random.randint(0, self.screenHeight)
         self.speed = random.randint(1, 5)
-        self.moveAngle = random.randint(0, 3590)
+        self.moveAngle = random.randint(0, 359)
         
 class Game(simpleGE.Scene):
     def __init__(self):
