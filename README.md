@@ -53,7 +53,7 @@ size is a tuple.  If left out, size is (640, 480)
 * **stop()** - ends the animation loop for this scene. Control is reverted to calling function
 * **process()** - happens once on every frame. Handy, but *does not* include the formal event handler.
   Overwrite for code you want to execute every frame.
-* **doEvents(event)** - is called once for every event in event handler. Overwrite for code that needs access
+* **processEvent(event)** - is called once for every event in event handler. Overwrite for code that needs access
   to pygame event objects (especially keyboard input)
 * **setImage(imageFile, autoSize = True)** - Loads the image into the background of the Scene. If autoSize is
   not listed or set to true, the image will be resized to the Scene's size
