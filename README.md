@@ -180,6 +180,7 @@ as-is, or can be subclassed if you want to give it custom behavior. The Label ob
 * **bgColor** - a pygame color, which will be the background if clearBack is False
 * **center** - an (x, y) tuple representing the position of the object
 * **size** - an (x, y) tuple representing the size of the label. You may need to adjust if you anticipate long text
+* **clearBack** - a Boolean value. If True, the background color is ignored and is rendered transparent. Default is False
 
 **Methods**
 * **process()** - Overwrite this method in a subclass to give the label some custom behavior
