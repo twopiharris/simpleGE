@@ -1135,6 +1135,12 @@ class Scene(object):
         """
         pass
         
+    def processEvent(self, event):
+        """
+            doEvents, renamed for consistency 
+        """
+        self.doEvents(event)
+        
     def update(self):
         """ happens once per frame, after event parsing.
             Overwrite to add your own code, esp event handling
