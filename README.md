@@ -196,11 +196,12 @@ as a basic input element, so it has some extra properties used to determine if t
 ### TxtInput
  A basic text input field.  Based on the button, so includes all features of Label and Button. Click on the label to start
  input, and then anything typed will be added to the text element. Note that to make this work, you need to call the TxtInput's
- readKeys() method from the Scene's doEvents() method, passing the event object.
+ readKeys() method from the Scene's doEvents() method, passing the event object. In edit mode, the background is yellow. Use
+ backspace to delete the last character and delete to clear the text in edit mode. Click outside the element to leave edit mode.
 
-* **readKeys()** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
+* **readKeys(event)** - if the input element is active (has been clicked,) keyboard input is added to the text element. Use
    backspace to delete the last character and delete to delete the current text.  May not work well with other keyboard
-   inputs.
+   inputs. *Normally called from scene's processEvent() method*
 
 ### Scroller
  Based on the Button class, so includes all properties and methods of Button and Label. Used for basic numeric input.
