@@ -129,6 +129,8 @@ The sprite 'knows' how large the screen is.  These properties are useful if you 
 boundary-checking routine or want to place the sprite in a random place on the screen.
 * **screenWidth** - the width of the screen. 
 * **screenHeight** - the height of the screen.
+* **scene** - the scene to which this sprite belongs.  This can be useful for communicating with other
+  components or for looking at the position of the sprite.
   
 ### Appearance Methods
 These methods are used to configure the appearance of the sprite object
