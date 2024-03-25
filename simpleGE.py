@@ -6,18 +6,19 @@
     for Game Programming - The L-Line
     by Andy Harris, 2006
     
-    3.0 modifications
+    3.0 modifications Spring 2024
     
-    refactor Sprite class to combine BasicSprite and SuperSprite
+    refactored Sprite class to combine BasicSprite and SuperSprite
     Sprite now combines behavior of old BasicSprite and SuperSprite    
-    Add Spritesheet class for character animation and tile extraction
-    change show() method of GUI elements to not require position
-    Give GUI elements (esp labels) alpha by default
-    add makeColorRect() option to Sprites for easier prototyping
+    Added Spritesheet class for character animation and tile extraction
+    changed show() method of GUI elements to not require position
+    Gave GUI elements (esp labels) alpha by default
+    added makeColorRect() option to Sprites for easier prototyping
     SpriteGroups are still supported, but not essential
-    Rationalize event-checking: update, checkEvents, doEvents
+    Rationalized event-checking: update, checkEvents, doEvents
     Scene, sprite, and UI elements all have a process() method.
-    Scene also has doEvents(event)
+    Scene also has processEvent(event)
+    older scene methods still supported but deprecated
     Add size as optional parameter in Scene constructor    
 
 """
@@ -25,6 +26,143 @@
 import pygame, math, time
 pygame.init()
 pygame.mixer.init()
+
+class Scene(object):
+    """ encapsulates the IDEA / ALTER framework
+        properties:
+        sprites - a list of sprite objects
+            that forms the primary sprite group
+        background - the background surface
+        screen - the display screen
+        
+        it's generally best to add all sprites 
+        as attributes, so they can have access
+        to each other if needed    
+        
+        default size is 640x480, but you can change in constructor
+    """
+    
+    def __init__(self, size = (640, 480)):
+        """ initialize the game engine
+            set up a sample sprite for testing
+        """
+        pygame.init()
+        self.screen = pygame.display.set_mode(size)
+        self.background = pygame.Surface(self.screen.get_size())
+        self.background.fill((0, 0, 0))
+        
+        self.sampleSprite = SuperSprite(self)
+        self.sampleSprite.setSpeed(3)
+        self.sampleSprite.setAngle(0)
+        self.sampleSprite.boundAction = self.sampleSprite.WRAP
+        self.sprites = [self.sampleSprite]
+        self.groups = []
+    
+    def start(self):
+        """ sets up the sprite groups
+            begins the main loop
+        """
+        self.mainSprites = pygame.sprite.OrderedUpdates(self.sprites)
+        self.groups.append(self.mainSprites)
+        
+        self.screen.blit(self.background, (0, 0))
+        self.clock = pygame.time.Clock()
+        self.keepGoing = True
+        while self.keepGoing:
+            self.__mainLoop()
+        pygame.quit()
+        
+    def setImage(self, imageFile, autoSize = True):
+        """ loads image to background.  By default, the image
+            is resized to the screen size. You can pass 'False' as
+            the second parameter to turn off this behavior. 
+        """
+        self.background = pygame.image.load(imageFile)
+        if autoSize:
+            newX = self.screen.get_size()[0]
+            newY = self.screen.get_size()[1]
+            self.background = pygame.transform.scale(self.background, (newX, newY))
+            
+    def stop(self):
+        """stops the loop"""
+        self.keepGoing = False
+    
+    def __mainLoop(self):
+        """ manage all the main events 
+            automatically called by start
+        """
+        self.clock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.keepGoing = False
+            self.doEvents(event)
+            self.processEvent(event)
+        
+        self.update()
+        self.process()
+        for group in self.groups:
+            group.clear(self.screen, self.background)
+            group.update()
+            group.draw(self.screen)
+        
+        pygame.display.flip()
+
+    def makeSpriteGroup(self, sprites):
+        """ create a group called groupName
+            containing all the sprites in the sprites 
+            list.  This group will be added after the 
+            sprites group, and will automatically
+            clear, update, and draw
+            May not really be necessary as the spriteList
+            can now contain lists of sprites
+        """
+        tempGroup = pygame.sprite.OrderedUpdates(sprites)
+        return tempGroup
+    
+    def addGroup(self, group):
+        """ adds a sprite group to the groups list for
+            automatic processing 
+        """
+        self.groups.append(group)
+
+    def doEvents(self, event):
+        """ overwrite this method to add your own events.
+            Works like normal event handling, passes event
+            object
+        """
+        pass
+        
+    def processEvent(self, event):
+        """
+            doEvents, renamed for consistency 
+        """
+        pass
+        
+    def update(self):
+        """ happens once per frame, after event parsing.
+            Overwrite to add your own code, esp event handling
+            that doesn't require event obj. (pygame.key.get_pressed, 
+            pygame.mouse.get_pos, etc)
+            Also a great place for collision detection
+        """
+        pass
+    
+    def process(self):
+        """ just like update, but added for consistency with 
+            sprite
+        """
+        pass
+    
+    def setCaption(self, title):
+        """ set's the scene's title text """
+        pygame.display.set_caption(title)
+        
+    def isKeyPressed(self, key):
+        """ uses hardware polling to see if a certain key is pressed """
+        keysDown = pygame.key.get_pressed()
+        return keysDown[key]
+
+
 
 class Sprite(pygame.sprite.Sprite):
   
@@ -461,7 +599,323 @@ class Sprite(pygame.sprite.Sprite):
         self.screen.blit(self.scene.background, (0, 0))
         self.oldCenter = self.position
 
+class Label(pygame.sprite.Sprite):
+    """ a basic label 
+        properties: 
+            font: font to use
+            text: text to display
+            fgColor: foreground color
+            bgColor: background color (None for transparent bg)
+            center: position of label's center
+            size: (width, height) of label
+            clearBack: if true, background is invisible
+    """
+    
+    def __init__(self, fontName = "freesansbold.ttf"):
+        pygame.sprite.Sprite.__init__(self)
+        self.font = pygame.font.Font(fontName, 20)
+        self.text = ""
+        self.fgColor = ((0xFF, 0xFF, 0xFF))
+        self.bgColor = ((0x00, 0x00, 0x00))
+        self.center = (100, 100)
+        self.size = (150, 30)
+        self.clearBack = False
         
+    def update(self):
+        self.checkEvents()
+        self.process()
+        self.image = pygame.Surface(self.size, pygame.SRCALPHA)
+        
+        if self.clearBack:
+            fontSurface = self.font.render(self.text, True, self.fgColor)
+            self.image.set_alpha(255)
+        else:
+            fontSurface = self.font.render(self.text, True, self.fgColor, self.bgColor)
+            self.image.fill(self.bgColor)
+
+        #center the text
+        xPos = (self.image.get_width() - fontSurface.get_width())/2
+        
+        self.image.blit(fontSurface, (xPos, 5))
+            
+        self.rect = self.image.get_rect()
+        self.rect.center = self.center
+        
+    def checkEvents(self):
+        pass
+    
+    def process(self):
+        pass
+    
+    def hide(self):
+        self.oldPosition = self.center
+        self.center = (-1000, -1000)
+    
+    def show(self):
+        self.center = self.oldPosition
+
+class Button(Label):
+    """ a button based on the label 
+        same properties as label +
+        active: True if user is clicking on sprite
+                False if user is not currently clicking
+        clicked: True when user releases mouse over a 
+                 currently active button
+    """
+
+    def __init__(self):
+        Label.__init__(self)
+        self.active = False
+        self.clicked = False
+        self.fgColor = (0x00, 0x00, 0x00)
+        self.bgColor = (0xCC, 0xCC, 0xCC)
+    
+    def update(self):
+        Label.update(self)
+        
+        self.clicked = False
+
+        #check for mouse input
+        if pygame.mouse.get_pressed() == (1, 0, 0):
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                self.active = True
+
+        #check for mouse release
+        if self.active == True:
+            if pygame.mouse.get_pressed() == (0, 0, 0):
+                self.active = False
+                if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.clicked = True
+
+class TxtInput(Button):
+    """ Simple text input 
+        Click on input to get to edit mode
+        will switch background to activeColor
+        delete to clear box, backspace to back up
+        text will be available as a property.
+        Note readkeys needs an event object
+        so it must be called from scene's 
+        doEvents() method
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.takingInput = False
+        self.activeColor = pygame.Color("yellow")
+        self.standardColor = self.bgColor
+        
+    def readKeys(self, event):
+        
+        if self.takingInput:
+            self.bgColor = pygame.Color("yellow")
+        else:
+            self.bgColor = self.standardColor
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.takingInput = not self.takingInput
+            else:
+                self.takingInput = False
+
+        if event.type == pygame.KEYDOWN:
+            if self.takingInput:
+                if event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                elif event.key == pygame.K_DELETE:
+                    self.text = ""
+                else:
+                    self.text += event.unicode
+
+class Scroller(Button):
+    """ like a button, but has a numeric value that 
+        can be decremented by clicking on left half
+        and incremented by clicking on right half.
+        new atributes:
+            value: the scroller's numeric value
+            minValue: minimum value
+            maxValue: maximum value
+            increment: How much is added or subtracted
+            format: format of string interpolation
+    """
+    
+    def __init__(self):
+        Button.__init__(self)
+        self.minValue = 0
+        self.maxValue = 10
+        self.increment = 1
+        self.value = 5
+        self.format = f"<<  {self.value}  >>"
+        
+    def update(self):
+        Button.update(self)
+        if self.active:
+            (mousex, mousey) = pygame.mouse.get_pos()
+            if mousex < self.rect.centerx:
+                self.value -= self.increment
+                if self.value < self.minValue:
+                    self.value = self.minValue
+            else:
+                self.value += self.increment
+                if self.value > self.maxValue:
+                    self.value = self.maxValue
+
+        self.text = f"<< {self.value} >>"
+
+class MultiLabel(pygame.sprite.Sprite):
+    """ accepts a list of strings, creates a multi-line
+        label to display text 
+        same properties as label except textLines
+        is a list of strings. There is no text
+        property.
+        Set the size manually. Vertical size should be at 
+        least 30 pixels per line (with the default font)
+    """
+    
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.textLines = ["This", "is", "sample", "text"]
+        self.font = pygame.font.Font("freesansbold.ttf", 20)
+        self.fgColor = ((0x00, 0x00, 0x00))
+        self.bgColor = ((0xFF, 0xFF, 0xFF))
+        self.center = (100, 100)
+        self.size = (150, 100)
+        self.clicked = False
+        self.active = False
+        
+    def update(self):
+        self.checkEvents()
+        self.process()
+        self.image = pygame.Surface(self.size)
+        self.image.fill(self.bgColor)
+        numLines = len(self.textLines)
+        vSize = self.image.get_height() / numLines
+        
+        for lineNum in range(numLines):
+            currentLine = self.textLines[lineNum]
+            fontSurface = self.font.render(currentLine, True, self.fgColor, self.bgColor)
+            #center the text
+            xPos = (self.image.get_width() - fontSurface.get_width())/2
+            yPos = lineNum * vSize
+            self.image.blit(fontSurface, (xPos, yPos + 15))
+        
+        self.rect = self.image.get_rect()
+        self.rect.center = self.center
+        
+        self.clicked = False
+        
+        #check for mouse input
+        if pygame.mouse.get_pressed() == (1, 0, 0):
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                self.active = True
+
+        #check for mouse release
+        if self.active == True:
+            if pygame.mouse.get_pressed() == (0, 0, 0):
+                self.active = False
+                if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.clicked = True
+
+    def checkEvents(self):
+        pass
+    
+    def process(self):
+        pass
+    
+    def hide(self):
+        self.oldCenter = self.center
+        self.center = (-1000, -1000)
+        
+    def show(self):
+        self.center = self.oldCenter
+        
+class Timer(object):
+  def __init__(self):
+    super().__init__()
+    self.start()
+    self.totalTime = 1000
+
+  def start(self):
+    self.__startTime = time.time()
+    
+  def getElapsedTime(self):
+    self.__now = time.time()
+    elapsedTime = self.__now - self.__startTime
+    return elapsedTime
+
+  def getTimeLeft(self):
+    timeLeft = self.totalTime - self.getElapsedTime()
+    return timeLeft
+
+class Sound(object):
+  def __init__(self, soundFile):
+    super().__init__()
+    self.sound = pygame.mixer.Sound(soundFile)
+
+  def play(self):
+    self.sound.play()
+
+class SpriteSheet():
+    """ handles basic character animation """
+    
+    def __init__(self, imageFile, cellSize, numRows, numCols, delay = .1):
+        """ requires 
+          * imageFile: master image file name
+          * cellSize: size of one cell in pixels (width, height)
+          * numRows: number of animation rows
+          * numCols: number of animation columns
+          * delay: gap (in seconds) between animation flips
+          
+          Note that the animation must be regular and rectangular
+          (that is all rows have same number of columns, and all
+           cells are the same size)
+          Use the offset to indicate the upper-left corner of the
+          animation rectangle you want to use
+          You can use more than one animation object if you have
+          different cell sizes or counts.
+        """
+        
+        self.offset = (0, 0)
+        self.imageFileName = imageFile
+        self.cellSize = cellSize        
+        self.NUMROWS = numRows
+        self.NUMCOLS = numCols
+        self.delay = delay
+        self.animRow = 0
+        self.animCol = 0
+        self.timer = Timer()
+        self.startCol = 0
+
+        self.animImage = pygame.image.load(self.imageFileName)
+        self.animImage.convert_alpha()
+        
+    def getCellImage(self, row, col):
+        """ given a row and column, returns the appropriate sub-image """
+        imgOut = pygame.Surface(self.cellSize, pygame.SRCALPHA)
+        
+        cellWidth = self.cellSize[0]
+        cellHeight = self.cellSize[1]
+        
+        cellX = self.offset[0] + (row * cellWidth)
+        cellY = self.offset[1] + (col * cellHeight)
+        
+        sourceRect = pygame.Rect(cellX, cellY, cellWidth, cellHeight)
+        
+        imgOut.blit(self.animImage, (0, 0), sourceRect)
+
+        return(imgOut)
+
+    def getNext(self, animRow):
+        """ returns the next image in the current row """
+        self.animRow = animRow
+        if self.timer.getElapsedTime() > self.delay:
+            self.timer.start()
+            if self.animCol < self.NUMCOLS -1:
+                self.animCol += 1
+            else:
+                self.animCol = self.startCol
+        return (self.getCellImage(self.animCol, self.animRow))
+
+
 
 class BasicSprite(pygame.sprite.Sprite):
     """ ***DEPRECATED - Please use simpleGE.Sprite instead ***
@@ -1031,545 +1485,11 @@ class SuperSprite(pygame.sprite.Sprite):
         self.visible = True
         self.setPosition(self.oldPosition)
 
-class Scene(object):
-    """ encapsulates the IDEA / ALTER framework
-        properties:
-        sprites - a list of sprite objects
-            that forms the primary sprite group
-        background - the background surface
-        screen - the display screen
-        
-        it's generally best to add all sprites 
-        as attributes, so they can have access
-        to each other if needed    
-        
-        default size is 640x480, but you can change in constructor
-    """
-    
-    def __init__(self, size = (640, 480)):
-        """ initialize the game engine
-            set up a sample sprite for testing
-        """
-        pygame.init()
-        self.screen = pygame.display.set_mode(size)
-        self.background = pygame.Surface(self.screen.get_size())
-        self.background.fill((0, 0, 0))
-        
-        self.sampleSprite = SuperSprite(self)
-        self.sampleSprite.setSpeed(3)
-        self.sampleSprite.setAngle(0)
-        self.sampleSprite.boundAction = self.sampleSprite.WRAP
-        self.sprites = [self.sampleSprite]
-        self.groups = []
-    
-    def start(self):
-        """ sets up the sprite groups
-            begins the main loop
-        """
-        self.mainSprites = pygame.sprite.OrderedUpdates(self.sprites)
-        self.groups.append(self.mainSprites)
-        
-        self.screen.blit(self.background, (0, 0))
-        self.clock = pygame.time.Clock()
-        self.keepGoing = True
-        while self.keepGoing:
-            self.__mainLoop()
-        pygame.quit()
-        
-    def setImage(self, imageFile, autoSize = True):
-        """ loads image to background.  By default, the image
-            is resized to the screen size. You can pass 'False' as
-            the second parameter to turn off this behavior. 
-        """
-        self.background = pygame.image.load(imageFile)
-        if autoSize:
-            newX = self.screen.get_size()[0]
-            newY = self.screen.get_size()[1]
-            self.background = pygame.transform.scale(self.background, (newX, newY))
-            
-    def stop(self):
-        """stops the loop"""
-        self.keepGoing = False
-    
-    def __mainLoop(self):
-        """ manage all the main events 
-            automatically called by start
-        """
-        self.clock.tick(30)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.keepGoing = False
-            self.doEvents(event)
-            self.processEvent(event)
-        
-        self.update()
-        self.process()
-        for group in self.groups:
-            group.clear(self.screen, self.background)
-            group.update()
-            group.draw(self.screen)
-        
-        pygame.display.flip()
 
-    def makeSpriteGroup(self, sprites):
-        """ create a group called groupName
-            containing all the sprites in the sprites 
-            list.  This group will be added after the 
-            sprites group, and will automatically
-            clear, update, and draw
-            May not really be necessary as the spriteList
-            can now contain lists of sprites
-        """
-        tempGroup = pygame.sprite.OrderedUpdates(sprites)
-        return tempGroup
-    
-    def addGroup(self, group):
-        """ adds a sprite group to the groups list for
-            automatic processing 
-        """
-        self.groups.append(group)
-
-    def doEvents(self, event):
-        """ overwrite this method to add your own events.
-            Works like normal event handling, passes event
-            object
-        """
-        pass
-        
-    def processEvent(self, event):
-        """
-            doEvents, renamed for consistency 
-        """
-        pass
-        
-    def update(self):
-        """ happens once per frame, after event parsing.
-            Overwrite to add your own code, esp event handling
-            that doesn't require event obj. (pygame.key.get_pressed, 
-            pygame.mouse.get_pos, etc)
-            Also a great place for collision detection
-        """
-        pass
-    
-    def process(self):
-        """ just like update, but added for consistency with 
-            sprite
-        """
-        pass
-    
-    def setCaption(self, title):
-        """ set's the scene's title text """
-        pygame.display.set_caption(title)
-        
-    def isKeyPressed(self, key):
-        """ uses hardware polling to see if a certain key is pressed """
-        keysDown = pygame.key.get_pressed()
-        return keysDown[key]
-
-class Label(pygame.sprite.Sprite):
-    """ a basic label 
-        properties: 
-            font: font to use
-            text: text to display
-            fgColor: foreground color
-            bgColor: background color (None for transparent bg)
-            center: position of label's center
-            size: (width, height) of label
-            clearBack: if true, background is invisible
-    """
-    
-    def __init__(self, fontName = "freesansbold.ttf"):
-        pygame.sprite.Sprite.__init__(self)
-        self.font = pygame.font.Font(fontName, 20)
-        self.text = ""
-        self.fgColor = ((0xFF, 0xFF, 0xFF))
-        self.bgColor = ((0x00, 0x00, 0x00))
-        self.center = (100, 100)
-        self.size = (150, 30)
-        self.clearBack = False
-        
-    def update(self):
-        self.checkEvents()
-        self.process()
-        self.image = pygame.Surface(self.size, pygame.SRCALPHA)
-        
-        if self.clearBack:
-            fontSurface = self.font.render(self.text, True, self.fgColor)
-            self.image.set_alpha(255)
-        else:
-            fontSurface = self.font.render(self.text, True, self.fgColor, self.bgColor)
-            self.image.fill(self.bgColor)
-
-        #center the text
-        xPos = (self.image.get_width() - fontSurface.get_width())/2
-        
-        self.image.blit(fontSurface, (xPos, 5))
-            
-        self.rect = self.image.get_rect()
-        self.rect.center = self.center
-        
-    def checkEvents(self):
-        pass
-    
-    def process(self):
-        pass
-    
-    def hide(self):
-        self.oldPosition = self.center
-        self.center = (-1000, -1000)
-    
-    def show(self):
-        self.center = self.oldPosition
-
-class Button(Label):
-    """ a button based on the label 
-        same properties as label +
-        active: True if user is clicking on sprite
-                False if user is not currently clicking
-        clicked: True when user releases mouse over a 
-                 currently active button
-    """
-
-    def __init__(self):
-        Label.__init__(self)
-        self.active = False
-        self.clicked = False
-        self.fgColor = (0x00, 0x00, 0x00)
-        self.bgColor = (0xCC, 0xCC, 0xCC)
-    
-    def update(self):
-        Label.update(self)
-        
-        self.clicked = False
-
-        #check for mouse input
-        if pygame.mouse.get_pressed() == (1, 0, 0):
-            if self.rect.collidepoint(pygame.mouse.get_pos()):
-                self.active = True
-
-        #check for mouse release
-        if self.active == True:
-            if pygame.mouse.get_pressed() == (0, 0, 0):
-                self.active = False
-                if self.rect.collidepoint(pygame.mouse.get_pos()):
-                    self.clicked = True
-
-class TxtInput(Button):
-    """ Simple text input 
-        Click on input to get to edit mode
-        will switch background to activeColor
-        delete to clear box, backspace to back up
-        text will be available as a property.
-        Note readkeys needs an event object
-        so it must be called from scene's 
-        doEvents() method
-    """
-    
-    def __init__(self):
-        super().__init__()
-        self.takingInput = False
-        self.activeColor = pygame.Color("yellow")
-        self.standardColor = self.bgColor
-        
-    def readKeys(self, event):
-        
-        if self.takingInput:
-            self.bgColor = pygame.Color("yellow")
-        else:
-            self.bgColor = self.standardColor
-        
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                self.takingInput = not self.takingInput
-            else:
-                self.takingInput = False
-
-        if event.type == pygame.KEYDOWN:
-            if self.takingInput:
-                if event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                elif event.key == pygame.K_DELETE:
-                    self.text = ""
-                else:
-                    self.text += event.unicode
-
-class Scroller(Button):
-    """ like a button, but has a numeric value that 
-        can be decremented by clicking on left half
-        and incremented by clicking on right half.
-        new atributes:
-            value: the scroller's numeric value
-            minValue: minimum value
-            maxValue: maximum value
-            increment: How much is added or subtracted
-            format: format of string interpolation
-    """
-    
-    def __init__(self):
-        Button.__init__(self)
-        self.minValue = 0
-        self.maxValue = 10
-        self.increment = 1
-        self.value = 5
-        self.format = f"<<  {self.value}  >>"
-        
-    def update(self):
-        Button.update(self)
-        if self.active:
-            (mousex, mousey) = pygame.mouse.get_pos()
-            if mousex < self.rect.centerx:
-                self.value -= self.increment
-                if self.value < self.minValue:
-                    self.value = self.minValue
-            else:
-                self.value += self.increment
-                if self.value > self.maxValue:
-                    self.value = self.maxValue
-
-        self.text = f"<< {self.value} >>"
-
-class MultiLabel(pygame.sprite.Sprite):
-    """ accepts a list of strings, creates a multi-line
-        label to display text 
-        same properties as label except textLines
-        is a list of strings. There is no text
-        property.
-        Set the size manually. Vertical size should be at 
-        least 30 pixels per line (with the default font)
-    """
-    
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.textLines = ["This", "is", "sample", "text"]
-        self.font = pygame.font.Font("freesansbold.ttf", 20)
-        self.fgColor = ((0x00, 0x00, 0x00))
-        self.bgColor = ((0xFF, 0xFF, 0xFF))
-        self.center = (100, 100)
-        self.size = (150, 100)
-        self.clicked = False
-        self.active = False
-        
-    def update(self):
-        self.checkEvents()
-        self.process()
-        self.image = pygame.Surface(self.size)
-        self.image.fill(self.bgColor)
-        numLines = len(self.textLines)
-        vSize = self.image.get_height() / numLines
-        
-        for lineNum in range(numLines):
-            currentLine = self.textLines[lineNum]
-            fontSurface = self.font.render(currentLine, True, self.fgColor, self.bgColor)
-            #center the text
-            xPos = (self.image.get_width() - fontSurface.get_width())/2
-            yPos = lineNum * vSize
-            self.image.blit(fontSurface, (xPos, yPos + 15))
-        
-        self.rect = self.image.get_rect()
-        self.rect.center = self.center
-        
-        self.clicked = False
-        
-        #check for mouse input
-        if pygame.mouse.get_pressed() == (1, 0, 0):
-            if self.rect.collidepoint(pygame.mouse.get_pos()):
-                self.active = True
-
-        #check for mouse release
-        if self.active == True:
-            if pygame.mouse.get_pressed() == (0, 0, 0):
-                self.active = False
-                if self.rect.collidepoint(pygame.mouse.get_pos()):
-                    self.clicked = True
-
-    def checkEvents(self):
-        pass
-    
-    def process(self):
-        pass
-    
-    def hide(self):
-        self.oldCenter = self.center
-        self.center = (-1000, -1000)
-        
-    def show(self):
-        self.center = self.oldCenter
-        
-class Timer(object):
-  def __init__(self):
-    super().__init__()
-    self.start()
-    self.totalTime = 1000
-
-  def start(self):
-    self.__startTime = time.time()
-    
-  def getElapsedTime(self):
-    self.__now = time.time()
-    elapsedTime = self.__now - self.__startTime
-    return elapsedTime
-
-  def getTimeLeft(self):
-    timeLeft = self.totalTime - self.getElapsedTime()
-    return timeLeft
-
-class Sound(object):
-  def __init__(self, soundFile):
-    super().__init__()
-    self.sound = pygame.mixer.Sound(soundFile)
-
-  def play(self):
-    self.sound.play()
-
-class SpriteSheet():
-    """ handles basic character animation """
-    
-    def __init__(self, imageFile, cellSize, numRows, numCols, delay = .1):
-        """ requires 
-          * imageFile: master image file name
-          * cellSize: size of one cell in pixels (width, height)
-          * numRows: number of animation rows
-          * numCols: number of animation columns
-          * delay: gap (in seconds) between animation flips
-          
-          Note that the animation must be regular and rectangular
-          (that is all rows have same number of columns, and all
-           cells are the same size)
-          Use the offset to indicate the upper-left corner of the
-          animation rectangle you want to use
-          You can use more than one animation object if you have
-          different cell sizes or counts.
-        """
-        
-        self.offset = (0, 0)
-        self.imageFileName = imageFile
-        self.cellSize = cellSize        
-        self.NUMROWS = numRows
-        self.NUMCOLS = numCols
-        self.delay = delay
-        self.animRow = 0
-        self.animCol = 0
-        self.timer = Timer()
-        self.startCol = 0
-
-        self.animImage = pygame.image.load(self.imageFileName)
-        self.animImage.convert_alpha()
-        
-    def getCellImage(self, row, col):
-        """ given a row and column, returns the appropriate sub-image """
-        imgOut = pygame.Surface(self.cellSize, pygame.SRCALPHA)
-        
-        cellWidth = self.cellSize[0]
-        cellHeight = self.cellSize[1]
-        
-        cellX = self.offset[0] + (row * cellWidth)
-        cellY = self.offset[1] + (col * cellHeight)
-        
-        sourceRect = pygame.Rect(cellX, cellY, cellWidth, cellHeight)
-        
-        imgOut.blit(self.animImage, (0, 0), sourceRect)
-
-        return(imgOut)
-
-    def getNext(self, animRow):
-        """ returns the next image in the current row """
-        self.animRow = animRow
-        if self.timer.getElapsedTime() > self.delay:
-            self.timer.start()
-            if self.animCol < self.NUMCOLS -1:
-                self.animCol += 1
-            else:
-                self.animCol = self.startCol
-        return (self.getCellImage(self.animCol, self.animRow))
-
-class Thing(Sprite):
-    # used only for testing purposes
-    # not a formal part of simpleGE
-    
-    def __init__(self, scene):
-        super().__init__(scene)
-        self.colorRect("blue", (50, 50))
-        #self.setSize(50, 50)
-        self.position = (200, 200)
-        self.image.set_alpha(100)
-        
-    def process(self):
-        self.addForce(.1, 270)
-        
-        if self.y > 450:
-            self.y = 10
-            self.speed = 0
-            
-        if self.isKeyPressed(pygame.K_UP):
-            self.addForce(.5, 90)
-        if self.isKeyPressed(pygame.K_SPACE):
-            self.position = (320, 20)
-            
-        direc = self.dirTo((100, 100))
-        dist = self.distanceTo((100, 100))
-            
-        self.scene.lblOut.text = f"(dir:{direc:.2f}, dist:{dist:.2f})" 
-        self.drawTrace("black")
-
-
-class LblOut(Label):
-    def __init__(self):
-        super().__init__()
-        self.center = (320, 30)
-        self.size = (200, 30)
-        self.fgColor = "black"
-        self.bgColor = "white"
-        self.clearBack = True
-
-class Game(Scene):
-    
-    """ used only for testing purposes. not a formal part of simpleGE """
-
-    def __init__(self):
-        super().__init__()
-        self.background.fill("papayawhip")
-        self.thing = Thing(self)
-        
-
-        self.lblOut = LblOut()
-        
-        self.scroller = Scroller()
-        self.scroller.minValue = 100
-        self.scroller.maxValue = 500
-        self.scroller.increment = 10
-        self.scroller.value = 300
-        
-        self.lblTimer = Label()
-        self.timer = Timer()
-        self.timer.totalTime = 30
-        self.lblTimer.center = (100, 240)
-        
-        self.sprites = [self.lblOut, 
-                        self.lblTimer, 
-                        self.scroller, 
-                        self.thing]
-        
-        
-    def doEvents(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_h:
-                self.lblOut.hide()
-            if event.key == pygame.K_s:
-                self.lblOut.show()
-            if event.key == pygame.K_t:
-                self.timer.totalTime += 5
-            
-    def process(self):
-        self.lblTimer.text = f"{self.timer.getTimeLeft():.2f}"
-        self.scroller.text = f"<- {self.scroller.value} ->"
-        self.lblOut.center = (self.scroller.value, self.lblOut.center[1])
-        
 if __name__ == "__main__":
     # change this code to test various features of the engine
     # This code will not run when gameEngine is run as a module
     # (as it usually will be)
         
-    game = Game()
-    game.start()
-     
+    game = Scene()
     game.start()
