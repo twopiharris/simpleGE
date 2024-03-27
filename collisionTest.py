@@ -3,8 +3,6 @@
 import pygame, simpleGE
 
 class Thing(simpleGE.Sprite):
-    # used only for testing purposes
-    # not a formal part of simpleGE
     
     def __init__(self, scene):
         super().__init__(scene)

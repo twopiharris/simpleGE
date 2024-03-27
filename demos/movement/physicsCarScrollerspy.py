@@ -16,7 +16,7 @@ class ScrDrag(simpleGE.Scroller):
         self.increment = .01
 
     def process(self):
-        self.text = f"<< drag: {self.value:.2f} >>"
+        self.text = f"<< drag: {self.value:10.2f} >>"
 
 class ScrAccel(simpleGE.Scroller):
     def __init__(self):
@@ -30,7 +30,7 @@ class ScrAccel(simpleGE.Scroller):
         self.increment = .1
 
     def process(self):
-        self.text = f"<< accel: {self.value:.2f} >>"
+        self.text = f"<< accel: {self.value:10.2f} >>"
 
 class ScrTurnRate(simpleGE.Scroller):
     def __init__(self):
@@ -44,7 +44,7 @@ class ScrTurnRate(simpleGE.Scroller):
         self.increment = 1
 
     def process(self):
-        self.text = f"<< turn: {self.value} >>"
+        self.text = f"<< turn: {self.value:12} >>"
 
 class LblSpeed(simpleGE.Label):
     def __init__(self):
