@@ -2,7 +2,22 @@
 
 import pygame, simpleGE
 
-class Thing(simpleGE.Sprite):
+class MovyThing(simpleGE.Sprite):
+    def __init__(self, scene):
+        super().__init(scene)
+        self.colorRect("Green", (50, 50))
+        
+    def process(self):
+        if self.isKeyPressed(pygame.K_a):
+            self.dx -= 5
+        if self.isKeyPressed(pygame.K_d):
+            self.dx += 5
+        if self.isKeyPressed(pygame.K_w):
+            self.dy -= 5
+        if self.isKeyPressed(pygame.K_s):
+            self.dy += 5
+
+class DrivyThing(simpleGE.Sprite):
     
     def __init__(self, scene):
         super().__init__(scene)
@@ -78,14 +93,14 @@ class Game(simpleGE.Scene):
     def __init__(self):
         super().__init__()
         self.background.fill("papayawhip")
-        self.thing = Thing(self)
+        self.drivy = DrivyThing(self)
         
         self.barrier = simpleGE.Sprite(self)
         self.barrier.colorRect("red", (100, 100))
         self.barrier.x = 320
         self.barrier.y = 240
         self.lblOut = LblOut()
-        self.sprites = [self.lblOut, self.barrier, self.thing]
+        self.sprites = [self.lblOut, self.barrier, self.drivy]
         
 def main():
     game = Game()
