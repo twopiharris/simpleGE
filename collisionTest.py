@@ -4,18 +4,50 @@ import pygame, simpleGE
 
 class MovyThing(simpleGE.Sprite):
     def __init__(self, scene):
-        super().__init(scene)
+        super().__init__(scene)
         self.colorRect("Green", (50, 50))
         
     def process(self):
+        self.speed = 0
+        #self.dir = "none"
         if self.isKeyPressed(pygame.K_a):
-            self.dx -= 5
-        if self.isKeyPressed(pygame.K_d):
-            self.dx += 5
-        if self.isKeyPressed(pygame.K_w):
-            self.dy -= 5
-        if self.isKeyPressed(pygame.K_s):
-            self.dy += 5
+            self.dx = -5
+            self.dir = "left"
+        elif self.isKeyPressed(pygame.K_d):
+            self.dx = 5
+            self.dir = "right"
+        elif self.isKeyPressed(pygame.K_w):
+            self.dy = -5
+            self.dir = "up"
+        elif self.isKeyPressed(pygame.K_s):
+            self.dir = "down"
+            self.dy = 5
+
+        #barrier check
+        barrier = self.scene.barrier
+        if self.collidesWith(barrier):
+            if self.dir == "left":
+                self.speed = 0
+                if self.left <= barrier.right:
+                    self.left = barrier.right
+                    
+            elif self.dir == "right":
+                self.speed = 0
+                if self.right >= barrier.left:
+                    self.right = barrier.left
+                    
+            elif self.dir == "up":
+                self.speed = 0
+                if self.top <= barrier.bottom:
+                    self.top = barrier.bottom
+                    self.speed = 0
+                    
+            elif self.dir == "down":
+                self.speed = 0
+                if self.bottom >= barrier.top:
+                    self.bottom = barrier.top
+                    self.speed = 0
+            
 
 class DrivyThing(simpleGE.Sprite):
     
@@ -93,14 +125,19 @@ class Game(simpleGE.Scene):
     def __init__(self):
         super().__init__()
         self.background.fill("papayawhip")
+        self.setCaption("WASD for green, arrows for blue")
         self.drivy = DrivyThing(self)
+        self.movy = MovyThing(self)
         
         self.barrier = simpleGE.Sprite(self)
         self.barrier.colorRect("red", (100, 100))
         self.barrier.x = 320
         self.barrier.y = 240
         self.lblOut = LblOut()
-        self.sprites = [self.lblOut, self.barrier, self.drivy]
+        self.sprites = [self.lblOut, 
+                        self.barrier,
+                        self.movy,
+                        self.drivy]
         
 def main():
     game = Game()
