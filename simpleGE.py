@@ -51,10 +51,8 @@ class Scene(object):
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill((0, 0, 0))
         
-        self.sampleSprite = SuperSprite(self)
-        self.sampleSprite.setSpeed(3)
-        self.sampleSprite.setAngle(0)
-        self.sampleSprite.boundAction = self.sampleSprite.WRAP
+        self.sampleSprite = Sprite(self)
+        self.sampleSprite.dx = 3
         self.sprites = [self.sampleSprite]
         self.groups = []
     
